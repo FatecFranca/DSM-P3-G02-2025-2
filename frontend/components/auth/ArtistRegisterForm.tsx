@@ -19,15 +19,31 @@ const ArtistRegisterForm: React.FC = () => {
   const [xLink, setXLink] = useState('');
   const [facebook, setFacebook] = useState('');
 
-  const [eventDate, setEventDate] = useState('');
-  const [eventLocal, setEventLocal] = useState('');
-  const [eventName, setEventName] = useState('');
-  const [eventTime, setEventTime] = useState('');
-  const [eventTicket, setEventTicket] = useState('');
-  
-  const [productName, setProductName] = useState('');
-  const [productValue, setProductValue] = useState('');
-  const [productDesc, setProductDesc] = useState('');
+  // Eventos dinâmicos
+  const [events, setEvents] = useState<Array<{
+    id: number;
+    date: string;
+    local: string;
+    name: string;
+    time: string;
+    ticket: string;
+  }>>(() => [
+    { id: Date.now(), date: '', local: '', name: '', time: '', ticket: '' },
+  ]);
+
+  // Produtos dinâmicos
+  const [products, setProducts] = useState<Array<{
+    id: number;
+    name: string;
+    value: string;
+    desc: string;
+    files?: File[];
+  }>>(() => [
+    { id: Date.now() + 1, name: '', value: '', desc: '', files: [] },
+  ]);
+
+  // Arquivos de perfil (ex.: fotos do artista)
+  const [profileFiles, setProfileFiles] = useState<File[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +53,32 @@ const ArtistRegisterForm: React.FC = () => {
       setLoading(false);
       router.push('/home-artista'); 
     }, 1500);
+  };
+
+  const handleEventChange = (id: number, field: string, value: string) => {
+    setEvents((prev) => prev.map((ev) => (ev.id === id ? { ...ev, [field]: value } : ev)));
+  };
+
+  const addEvent = () => {
+    setEvents((prev) => [
+      ...prev,
+      { id: Date.now() + Math.floor(Math.random() * 1000), date: '', local: '', name: '', time: '', ticket: '' },
+    ]);
+  };
+
+  const handleProductChange = (id: number, field: string, value: string) => {
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
+  };
+
+  const handleProductFilesChange = (id: number, files: File[]) => {
+    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, files } : p)));
+  };
+
+  const addProduct = () => {
+    setProducts((prev) => [
+      ...prev,
+      { id: Date.now() + Math.floor(Math.random() * 1000), name: '', value: '', desc: '', files: [] },
+    ]);
   };
 
   return (
@@ -76,10 +118,14 @@ const ArtistRegisterForm: React.FC = () => {
             />
           </div>
           <div className="flex flex-col gap-4"> 
-            <div className="flex-grow min-h-[140px]"> 
+            <div className="grow min-h-[140px]"> 
               <ArtistFileDropzone
                 title="Arraste e insira suas fotos de perfil"
                 description="PNG, JPG (max. 800x400px)"
+                accept="image/png,image/jpeg"
+                multiple={true}
+                maxFiles={5}
+                onFilesChange={(f) => setProfileFiles(f)}
               />
             </div>
             <ArtistInputField
@@ -106,52 +152,59 @@ const ArtistRegisterForm: React.FC = () => {
         <h2 className="text-2xl font-bold text-white text-center">
           Compartilhe sua Agenda
         </h2>
-        <p className="text-lg text-gray-300 font-semibold mt-4">1º Evento</p> 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ArtistInputField
-            id="eventDate"
-            name="eventDate"
-            type="text"
-            placeholder="Data: __/__/__"
-            value={eventDate}
-            onChange={(e) => setEventDate(e.target.value)}
-          />
-          <ArtistInputField
-            id="eventLocal"
-            name="eventLocal"
-            type="text"
-            placeholder="Local"
-            value={eventLocal}
-            onChange={(e) => setEventLocal(e.target.value)}
-          />
-          <ArtistInputField
-            id="eventName"
-            name="eventName"
-            type="text"
-            placeholder="Nome do evento"
-            value={eventName}
-            onChange={(e) => setEventName(e.target.value)}
-          />
-          <ArtistInputField
-            id="eventTime"
-            name="eventTime"
-            type="text"
-            placeholder="Horário: 00h00min"
-            value={eventTime}
-            onChange={(e) => setEventTime(e.target.value)}
-          />
+        <div className="space-y-4 mt-4">
+          {events.map((ev, idx) => (
+            <div key={ev.id}>
+              <p className="text-lg text-gray-300 font-semibold">{`${idx + 1}º Evento`}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <ArtistInputField
+                  id={`eventDate-${ev.id}`}
+                  name={`eventDate-${ev.id}`}
+                  type="text"
+                  placeholder="Data: __/__/__"
+                  value={ev.date}
+                  onChange={(e) => handleEventChange(ev.id, 'date', e.target.value)}
+                />
+                <ArtistInputField
+                  id={`eventLocal-${ev.id}`}
+                  name={`eventLocal-${ev.id}`}
+                  type="text"
+                  placeholder="Local"
+                  value={ev.local}
+                  onChange={(e) => handleEventChange(ev.id, 'local', e.target.value)}
+                />
+                <ArtistInputField
+                  id={`eventName-${ev.id}`}
+                  name={`eventName-${ev.id}`}
+                  type="text"
+                  placeholder="Nome do evento"
+                  value={ev.name}
+                  onChange={(e) => handleEventChange(ev.id, 'name', e.target.value)}
+                />
+                <ArtistInputField
+                  id={`eventTime-${ev.id}`}
+                  name={`eventTime-${ev.id}`}
+                  type="text"
+                  placeholder="Horário: 00h00min"
+                  value={ev.time}
+                  onChange={(e) => handleEventChange(ev.id, 'time', e.target.value)}
+                />
+                <div className="md:col-span-2">
+                  <ArtistInputField
+                    id={`eventTicket-${ev.id}`}
+                    name={`eventTicket-${ev.id}`}
+                    type="text"
+                    placeholder="Link da compra do ingresso"
+                    value={ev.ticket}
+                    onChange={(e) => handleEventChange(ev.id, 'ticket', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+
           <div className="md:col-span-2">
-            <ArtistInputField
-              id="eventTicket"
-              name="eventTicket"
-              type="text"
-              placeholder="Link da compra do ingresso"
-              value={eventTicket}
-              onChange={(e) => setEventTicket(e.target.value)}
-            />
-          </div>
-          <div className="md:col-span-2">
-            <Button type="button" className="w-full">
+            <Button type="button" className="w-full" onClick={addEvent}>
               Adicionar mais um evento
             </Button>
           </div>
@@ -162,45 +215,56 @@ const ArtistRegisterForm: React.FC = () => {
         <h2 className="text-2xl font-bold text-white text-center">
           Compartilhe seus produtos
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Coluna Esquerda */}
-          <div className="space-y-4">
-            <ArtistInputField
-              id="productName"
-              name="productName"
-              type="text"
-              placeholder="Nome do produto"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-            />
-            <ArtistInputField
-              id="productValue"
-              name="productValue"
-              type="text"
-              placeholder="Valor do produto: R$ 00,00"
-              value={productValue}
-              onChange={(e) => setProductValue(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-4">
-            <ArtistTextArea
-              id="productDesc"
-              name="productDesc"
-              placeholder="Descrição do produto"
-              value={productDesc}
-              onChange={(e) => setProductDesc(e.target.value)}
-              rows={5} 
-              className="flex-grow" 
-            />
-            <div className="flex-grow min-h-[140px]">
-              <ArtistFileDropzone
-                title="Arraste e insira as fotos do seu produto"
-                description="PNG, JPG (max. 800x800px)"
-              />
+        <div className="space-y-4 mt-4">
+          {products.map((p, idx) => (
+            <div key={p.id}>
+              <p className="text-lg text-gray-300 font-semibold">{`Produto ${idx + 1}`}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <div className="space-y-4">
+                  <ArtistInputField
+                    id={`productName-${p.id}`}
+                    name={`productName-${p.id}`}
+                    type="text"
+                    placeholder="Nome do produto"
+                    value={p.name}
+                    onChange={(e) => handleProductChange(p.id, 'name', e.target.value)}
+                  />
+                  <ArtistInputField
+                    id={`productValue-${p.id}`}
+                    name={`productValue-${p.id}`}
+                    type="text"
+                    placeholder="Valor do produto: R$ 00,00"
+                    value={p.value}
+                    onChange={(e) => handleProductChange(p.id, 'value', e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-4">
+                  <ArtistTextArea
+                    id={`productDesc-${p.id}`}
+                    name={`productDesc-${p.id}`}
+                    placeholder="Descrição do produto"
+                    value={p.desc}
+                    onChange={(e) => handleProductChange(p.id, 'desc', e.target.value)}
+                    rows={5}
+                    className="grow"
+                  />
+                  <div className="grow min-h-[140px]">
+                    <ArtistFileDropzone
+                      title="Arraste e insira as fotos do seu produto"
+                      description="PNG, JPG (max. 800x800px)"
+                      accept="image/png,image/jpeg"
+                      multiple={true}
+                      maxFiles={5}
+                      onFilesChange={(files) => handleProductFilesChange(p.id, files)}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
+          ))}
+
           <div className="md:col-span-2">
-            <Button type="button" className="w-full">
+            <Button type="button" className="w-full" onClick={addProduct}>
               Adicionar mais um Produto
             </Button>
           </div>
