@@ -1,4 +1,3 @@
-// frontend/components/auth/ArtistRegisterForm.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -19,7 +18,6 @@ const ArtistRegisterForm: React.FC = () => {
   const [xLink, setXLink] = useState('');
   const [facebook, setFacebook] = useState('');
 
-  // Eventos dinâmicos
   const [events, setEvents] = useState<Array<{
     id: number;
     date: string;
@@ -31,7 +29,6 @@ const ArtistRegisterForm: React.FC = () => {
     { id: Date.now(), date: '', local: '', name: '', time: '', ticket: '' },
   ]);
 
-  // Produtos dinâmicos
   const [products, setProducts] = useState<Array<{
     id: number;
     name: string;
@@ -42,7 +39,6 @@ const ArtistRegisterForm: React.FC = () => {
     { id: Date.now() + 1, name: '', value: '', desc: '', files: [] },
   ]);
 
-  // Arquivos de perfil (ex.: fotos do artista)
   const [profileFiles, setProfileFiles] = useState<File[]>([]);
 
   const handleSubmit = (e: React.FormEvent) => {
