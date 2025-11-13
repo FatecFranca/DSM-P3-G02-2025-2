@@ -1,0 +1,32 @@
+{
+  "name": "dsm-p3-g02-2025-2",
+  "version": "1.0.0",
+  "description": "Repositório do GRUPO 02 do Projeto Interdisciplinar do 3º semestre DSM 2025/2. Alunos: Ana Laura Lis Oliveira Zenith, Eduardo Fernandes Grespi, Guilherme Heitor Oliveira Barcelos, Héricles Robert Mendes, João Marcos Landi Sousa.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FatecFranca/DSM-P3-G02-2025-2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/FatecFranca/DSM-P3-G02-2025-2/issues"
+  },
+  "homepage": "https://github.com/FatecFranca/DSM-P3-G02-2025-2#readme",
+  "dependencies": {
+    "next": "^16.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

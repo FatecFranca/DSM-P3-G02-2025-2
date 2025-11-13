@@ -10,3 +10,26 @@ module.exports = {
   },
   plugins: [],
 };
+
+module.exports = {
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        'primary': '#7A3BFF',
+        'secondary': '#B14EFF',
+        'accent': '#FF7A29',
+        'white': '#FFFFFF',
+        'gray-custom': '#C0C0C0'
+      },
+      fontFamily: {
+        'title': ['Poppins', 'sans-serif'],
+        'body': ['Montserrat', 'sans-serif'],
+      }
+    },
+  },
+  plugins: [],
+}

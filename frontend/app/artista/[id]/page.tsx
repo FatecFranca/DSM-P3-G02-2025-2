@@ -1,0 +1,22 @@
+// app/artista/[id]/page.tsx
+import ArtistSection from '@/components/ui/ArtistSection';
+import AgendaSection from '@/components/ui/AgendaSection';
+import ProductsSection from '@/components/ui/ProductsSection';
+import CommentsSection from '@/components/ui/CommentsSection';
+
+interface ArtistPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function ArtistPage({ params }: ArtistPageProps) {
+  return (
+    <div className="font-body">
+      <ArtistSection artistId={params.id} />
+      <AgendaSection artistId={params.id} />
+      <ProductsSection artistId={params.id} />
+      <CommentsSection artistId={params.id} />
+    </div>
+  );
+}

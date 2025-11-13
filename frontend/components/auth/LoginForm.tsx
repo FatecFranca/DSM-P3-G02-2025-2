@@ -42,9 +42,11 @@ const LoginForm: React.FC = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-            <Button type="submit" disabled={loading}>
+        <div className="text-center">
+            <Button type="submit" className="mt-4 max-w-56" disabled={loading}>
             {loading ? 'Entrando...' : 'Entrar'}
             </Button>
+        </div>
       </form>
       <div className="text-center mt-8">
         <a href="/auth/register" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
