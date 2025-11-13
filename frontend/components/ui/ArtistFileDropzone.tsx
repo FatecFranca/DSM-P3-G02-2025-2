@@ -5,7 +5,7 @@ interface DropzoneProps {
   title: string;
   description?: string;
   multiple?: boolean;
-  accept?: string; // e.g. 'image/png,image/jpeg'
+  accept?: string;
   maxFiles?: number;
   onFilesChange?: (files: File[]) => void;
 }
