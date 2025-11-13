@@ -32,7 +32,7 @@ const RegisterForm: React.FC = () => {
       setLoading(false);
       
       if (userType === 'artista') {
-        router.push('/auth/perfil-artista');
+        router.push('/auth/cadastro-artista');
       } else {
         router.push('/home'); 
       }
