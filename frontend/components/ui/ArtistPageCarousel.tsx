@@ -64,7 +64,7 @@ const ArtistPageCarousel: React.FC<ArtistPageCarouselProps> = ({ artistId }) => 
   return (
     <div className="flex flex-col items-center">
       <div className="relative flex items-center justify-center">
-        {/* SETA ESQUERDA - FORA DA IMAGEM */}
+        
         <button
           aria-label="previous"
           onClick={prev}
@@ -82,7 +82,7 @@ const ArtistPageCarousel: React.FC<ArtistPageCarouselProps> = ({ artistId }) => 
           onPointerLeave={resetDrag}
           style={{ transform: `translateX(${dragDelta}px)`, transition: dragStart ? 'none' : 'transform 300ms ease', touchAction: 'pan-y' }}
         >
-          {/* IMAGEM DA ESQUERDA */}
+          
           <div
             onClick={() => setCurrent(leftIndex)}
             className="absolute left-0 top-12 w-40 h-56 rounded-xl overflow-hidden shadow-xl transform transition-transform duration-300 cursor-pointer hover:scale-105"
@@ -91,7 +91,6 @@ const ArtistPageCarousel: React.FC<ArtistPageCarouselProps> = ({ artistId }) => 
             <Image src={images[leftIndex].img} alt={images[leftIndex].alt} fill className="object-cover" />
           </div>
 
-          {/* IMAGEM PRINCIPAL */}
           <div className="relative w-48 h-64 rounded-xl overflow-hidden shadow-2xl transform scale-105 z-20 cursor-pointer">
             <Image 
               src={images[current].img} 
@@ -101,7 +100,6 @@ const ArtistPageCarousel: React.FC<ArtistPageCarouselProps> = ({ artistId }) => 
             />
           </div>
 
-          {/* IMAGEM DA DIREITA */}
           <div
             onClick={() => setCurrent(rightIndex)}
             className="absolute right-0 top-12 w-40 h-56 rounded-xl overflow-hidden shadow-xl transform transition-transform duration-300 cursor-pointer hover:scale-105"
@@ -111,7 +109,7 @@ const ArtistPageCarousel: React.FC<ArtistPageCarouselProps> = ({ artistId }) => 
           </div>
         </div>
 
-        {/* SETA DIREITA - FORA DA IMAGEM */}
+
         <button
           aria-label="next"
           onClick={next}
@@ -121,9 +119,7 @@ const ArtistPageCarousel: React.FC<ArtistPageCarouselProps> = ({ artistId }) => 
         </button>
       </div>
 
-      {/* INDICADORES */}
       <div className="mt-4 text-center">
-        <p className="text-white font-semibold mb-2">{artist?.name}</p>
         <div className="flex items-center justify-center gap-2">
           {images.map((_, i) => (
             <button

@@ -1,4 +1,3 @@
-// components/ui/AgendaSection.tsx
 import React from 'react';
 
 interface AgendaSectionProps {
@@ -16,24 +15,17 @@ export default function AgendaSection({ artistId }: AgendaSectionProps) {
   ];
 
   return (
-    <section id="agenda" className="min-h-screen bg-neutral-900 py-12">
-      <div className="container mx-auto px-6 max-w-4xl">
-        <h2 className="text-3xl font-bold text-center mb-8 text-white">Agenda</h2>
+    <section id="agenda" className="min-h-screen bg-black py-12">
+      <div className="container mx-auto px-6 max-w-6xl">
+        <h2 className="text-3xl font-bold text-center mb-8 text-white font-poppins">Agenda</h2>
         
-        <div className="space-y-4">
+        <div className="space-y-3">
           {shows.map((show, index) => (
-            <div key={index} className="bg-neutral-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-                <div className="mb-4 md:mb-0">
-                  <h3 className="font-bold text-white text-xl">{show.date}</h3>
-                  <p className="text-gray-300">{show.location}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold text-white">{show.event}</p>
-                  <button className="mt-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
-                    Comprar Ingresso
-                  </button>
-                </div>
+            <div key={index} className="text-white p-4 border-b border-neutral-800">
+              <div className="flex justify-between items-center">
+                <span className="font-montserrat text-left flex-1">{show.date}</span>
+                <span className="font-montserrat text-center flex-1">{show.location}</span>
+                <span className="font-montserrat text-right flex-1">{show.event}</span>
               </div>
             </div>
           ))}
