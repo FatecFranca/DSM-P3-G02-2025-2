@@ -1,5 +1,6 @@
-// components/ui/ArtistSection.tsx
+'use client';
 import React from 'react';
+import ArtistPageCarousel from './ArtistPageCarousel';
 
 interface ArtistSectionProps {
   artistId?: string;
@@ -11,16 +12,14 @@ export default function ArtistSection({ artistId }: ArtistSectionProps) {
       <div className="container mx-auto px-6 max-w-6xl">
         
         <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-6">Marina Sena</h1>
+          <h1 className="text-4xl font-bold text-white mb-6 font-poppins font-bold">Marina Sena</h1>
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           
-          {/* COLUNA DA ESQUERDA - IMAGEM */}
+          {/* COLUNA DA ESQUERDA - CAROUSEL */}
           <div className="flex justify-center">
-            <div className="w-80 h-80 bg-neutral-900 rounded-2xl flex items-center justify-center border border-neutral-800">
-              <div className="text-6xl">🎤</div>
-            </div>
+          <ArtistPageCarousel artistId={artistId || "2"} />
           </div>
 
           {/* COLUNA DA DIREITA - TEXTO */}
@@ -34,29 +33,28 @@ export default function ArtistSection({ artistId }: ArtistSectionProps) {
           </div>
         </div>
 
-        
+        {/* REDES SOCIAIS DISTRIBUÍDAS DA ESQUERDA À DIREITA */}
+        <div className="flex justify-between items-center text-gray-300 mt-12 px-4">
+          <div className="flex items-center space-x-2">
+            <img src="/spotify.png" alt="Spotify" className="w-6 h-6" />
+            <span className="font-semibold">Spotify</span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <img src="/instagram.png" alt="Instagram" className="w-6 h-6" />
+            <span className="font-medium">Instagram</span>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <img src="/facebook.png" alt="Facebook" className="w-6 h-6" />
+            <span className="font-medium">Facebook</span>
+          </div>
 
-<div className="flex justify-between items-center text-gray-300 mt-12 px-4">
-  <div className="flex items-center space-x-2">
-    <img src="/spotify.png" alt="Spotify" className="w-6 h-6" />
-    <span className="font-semibold">Spotify</span>
-  </div>
-  
-  <div className="flex items-center space-x-2">
-    <img src="/instagram.png" alt="Instagram" className="w-6 h-6" />
-    <span className="font-medium">Instagram</span>
-  </div>
-  
-  <div className="flex items-center space-x-2">
-    <img src="/facebook.png" alt="Facebook" className="w-6 h-6" />
-    <span className="font-medium">Facebook</span>
-  </div>
-
-  <div className="flex items-center space-x-2">
-    <img src="/midia-social.png" alt="X" className="w-6 h-6" />
-    <span className="font-medium">X</span>
-  </div>
-</div>
+          <div className="flex items-center space-x-2">
+            <img src="/midia-social.png" alt="X" className="w-6 h-6" />
+            <span className="font-medium">X</span>
+          </div>
+        </div>
       </div>
     </section>
   );
