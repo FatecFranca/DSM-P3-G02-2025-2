@@ -3,3 +3,22 @@
 html, body {
   height: 100%;
 }
+
+.sonora-artist-section {
+  /* Suas cores específicas */
+}
+
+.sonora-artist-section .sonora-primary { color: #7A3BFF; }
+.sonora-artist-section .sonora-secondary { color: #B14EFF; }
+.sonora-artist-section .sonora-accent { color: #FF7A29; }
+
+/* Ou usando variáveis CSS */
+.sonora-artist-section {
+  --sonora-primary: #7A3BFF;
+  --sonora-secondary: #B14EFF;
+  --sonora-accent: #FF7A29;
+}
+
+.sonora-artist-section .bg-sonora-primary { background-color: var(--sonora-primary); }
+.sonora-artist-section .bg-sonora-secondary { background-color: var(--sonora-secondary); }
+.sonora-artist-section .bg-sonora-accent { background-color: var(--sonora-accent); }

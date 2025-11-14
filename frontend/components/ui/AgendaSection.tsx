@@ -16,20 +16,23 @@ export default function AgendaSection({ artistId }: AgendaSectionProps) {
   ];
 
   return (
-    <section id="agenda" className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-6">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-900">Agenda</h2>
+    <section id="agenda" className="min-h-screen bg-neutral-900 py-12">
+      <div className="container mx-auto px-6 max-w-4xl">
+        <h2 className="text-3xl font-bold text-center mb-8 text-white">Agenda</h2>
         
-        <div className="max-w-2xl mx-auto space-y-4">
+        <div className="space-y-4">
           {shows.map((show, index) => (
-            <div key={index} className="bg-white rounded-lg p-4 border border-gray-200">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold text-gray-800">{show.date}</h3>
-                  <p className="text-gray-600">{show.location}</p>
+            <div key={index} className="bg-neutral-800 rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div className="mb-4 md:mb-0">
+                  <h3 className="font-bold text-white text-xl">{show.date}</h3>
+                  <p className="text-gray-300">{show.location}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-medium text-gray-800">{show.event}</p>
+                  <p className="font-semibold text-white">{show.event}</p>
+                  <button className="mt-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition font-medium">
+                    Comprar Ingresso
+                  </button>
                 </div>
               </div>
             </div>
