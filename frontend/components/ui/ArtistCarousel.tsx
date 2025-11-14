@@ -111,7 +111,7 @@ const ArtistCarousel: React.FC = () => {
             <button
               key={i}
               onClick={() => setCurrent(i)}
-              className={`w-2 h-2 rounded-full ${i === current ? 'bg-white' : 'bg-gray-600'}`}
+              className={`w-2 h-2 rounded-full cursor-pointer ${i === current ? 'bg-white' : 'bg-gray-600'}`}
               aria-label={`Go to slide ${i + 1}`}
             />
           ))}
