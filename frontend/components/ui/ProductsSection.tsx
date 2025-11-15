@@ -237,7 +237,7 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
         <div className="text-center mt-8">
           <Button
             onClick={() => console.log('Ver mais produtos')}
-            className="border border-[#7A3BFF] text-white bg-transparent hover:from-purple-700 hover:to-orange-600"
+            className="text-white bg-transparent hover:from-purple-700 hover:to-orange-600"
           >
             Ver mais
           </Button>

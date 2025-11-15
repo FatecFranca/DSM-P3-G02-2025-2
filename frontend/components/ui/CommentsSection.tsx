@@ -1,5 +1,5 @@
-// components/ui/CommentsSection.tsx
 import React from 'react';
+import Image from 'next/image';
 
 interface CommentsSectionProps {
   artistId?: string;
@@ -15,8 +15,14 @@ export default function CommentsSection({ artistId }: CommentsSectionProps) {
           {/* Comentário Exemplo */}
           <div className="bg-neutral-900 rounded-xl p-6 mb-6 border border-neutral-800">
             <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#7A3BFF] to-[#B14EFF] rounded-full flex items-center justify-center text-white font-bold font-poppins">
-                FS
+              <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                <Image 
+                  src="/comentarios/perfil1.jpg" 
+                  alt="Fã Clube Marina Sena"     
+                  width={48}                     
+                  height={48}                    
+                  className="w-full h-full object-cover" 
+                />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
@@ -42,8 +48,14 @@ export default function CommentsSection({ artistId }: CommentsSectionProps) {
           {/* Outro Comentário */}
           <div className="bg-neutral-900 rounded-xl p-6 mb-6 border border-neutral-800">
             <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#FF7A29] to-[#B14EFF] rounded-full flex items-center justify-center text-white font-bold font-poppins">
-                MS
+                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                <Image 
+                  src="/comentarios/perfil2.jpg" 
+                  alt="Fã Clube Seners"     
+                  width={48}                     
+                  height={48}                    
+                  className="w-full h-full object-cover" 
+                />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
@@ -69,8 +81,14 @@ export default function CommentsSection({ artistId }: CommentsSectionProps) {
           {/* Mais um Comentário */}
           <div className="bg-neutral-900 rounded-xl p-6 mb-8 border border-neutral-800">
             <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-r from-[#7A3BFF] to-[#FF7A29] rounded-full flex items-center justify-center text-white font-bold font-poppins">
-                RC
+              <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                <Image 
+                  src="/comentarios/perfil3.jpg" 
+                  alt="Fã Clube Sena"     
+                  width={48}                     
+                  height={48}                    
+                  className="w-full h-full object-cover" 
+                />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">

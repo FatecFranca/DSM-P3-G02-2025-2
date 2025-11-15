@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="w-full">
+    <footer className="w-full bg-black">
       <div className="mx-auto px-6 py-10 text-gray-400 flex justify-center w-full"> 
         <div className="max-w-4xl w-full"> 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-80">
