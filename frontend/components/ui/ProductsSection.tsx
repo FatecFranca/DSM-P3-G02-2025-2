@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import React, { useState } from 'react';
-import Button from './Button'; // Ajuste o caminho conforme necessário
+import Button from './Button'; 
 
 interface Product {
   id: number;
@@ -32,7 +32,7 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
   const handleAddToCart = (productId: number) => {
     const selectedSize = selectedSizes[productId];
     console.log(`Adicionando produto ${productId} tamanho ${selectedSize} ao carrinho`);
-    // Aqui você pode adicionar a lógica do carrinho
+
   };
 
   const products = [
@@ -141,14 +141,14 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
       <div className="container mx-auto px-6 max-w-6xl">
         <h2 className="text-3xl font-bold text-center mb-8 text-white font-poppins">Produtos</h2>
         
-        {/* Barra de Pesquisa - LUPA À ESQUERDA */}
+
         <div className="max-w-md mx-auto mb-8">
           <div className="relative">
             <form
               onSubmit={doSearch}
               className={`bg-neutral-900 rounded-full px-6 py-2 flex items-center gap-3 w-full ${notFound ? 'ring-2 ring-red-500' : ''}`}
             >
-              {/* Ícone da lupa da pasta public */}
+
               <button type="submit" className="cursor-pointer">
                 <Image 
                   src="/busca.png" 
@@ -174,11 +174,11 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
           </div>
         </div>
 
-        {/* Grid de Produtos - 9 GRIDS QUADRADOS */}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {filteredProducts.map(product => (
             <div key={product.id} className="bg-neutral-900 rounded-lg p-6 border border-neutral-800 aspect-square flex flex-col">
-              {/* Área da imagem - QUADRADA */}
+
               <div className="w-full aspect-square bg-neutral-800 rounded-lg mb-4 overflow-hidden">
                 <Image 
                   src={product.image} 
@@ -189,13 +189,13 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
                 />
               </div>
               
-              {/* Conteúdo - ocupa o resto do espaço */}
+
               <div className="flex flex-col flex-grow justify-between">
                 <div>
                   <h3 className="font-bold text-white text-lg mb-2 font-poppins">{product.name}</h3>
                   <p className="text-gray-400 mb-3 font-montserrat text-sm">{product.description}</p>
                   
-                  {/* Seletor de Tamanhos */}
+
                   <div className="mb-4">
                     <p className="text-gray-400 text-sm mb-2 font-montserrat">Tamanho:</p>
                     <div className="flex gap-2">
@@ -219,7 +219,7 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
                 <div>
                   <p className="text-xl font-bold text-white mb-4 font-montserrat">{product.price}</p>
                   
-                  {/* USANDO O COMPONENTE BUTTON DA SUA AMIGA */}
+
                   <Button
                     onClick={() => handleAddToCart(product.id)}
                     disabled={!selectedSizes[product.id]}
@@ -233,7 +233,7 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
           ))}
         </div>
 
-        {/* Botão Ver Mais - TAMBÉM USANDO O COMPONENTE BUTTON */}
+
         <div className="text-center mt-8">
           <Button
             onClick={() => console.log('Ver mais produtos')}
