@@ -5,7 +5,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
-import { User, Mail, Lock, Music } from 'lucide-react'; 
+import { User, Mail, Lock } from 'lucide-react'; 
+
+interface User {
+  name: string;
+  email: string;
+  type: string;
+  password?: string;
+}
 
 const RegisterForm: React.FC = () => {
   const [name, setName] = useState('');
@@ -13,20 +20,40 @@ const RegisterForm: React.FC = () => {
   const [userType, setUserType] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false); 
+  const [error, setError] = useState('');
   
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
     if (!userType || !name || !email || !password) {
-      alert('Por favor, preencha todos os campos.');
+      setError('Por favor, preencha todos os campos.');
       setLoading(false);
       return;
     }
 
-    console.log("Registrando:", { name, email, userType, password });
+    const newUser: User = {
+      name: name,
+      email: email,
+      type: userType,
+      password: password
+    };
+
+    const usersDB: User[] = JSON.parse(localStorage.getItem("usersDB") || "[]");
+    const userExists = usersDB.find((user) => user.email === email);
+
+    if (userExists) {
+      setError('Este e-mail já está cadastrado.');
+      setLoading(false);
+      return;
+    }
+
+    usersDB.push(newUser);
+    localStorage.setItem("usersDB", JSON.stringify(usersDB));
+    localStorage.setItem("currentUser", JSON.stringify(newUser));
 
     setTimeout(() => {
       setLoading(false);
@@ -103,6 +130,10 @@ const RegisterForm: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {error && (
+          <p className="text-red-400 text-sm text-center mb-4">{error}</p>
+        )}
 
         <Button 
           type="submit" 

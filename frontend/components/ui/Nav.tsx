@@ -5,8 +5,25 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+interface User {
+  name: string;
+  email: string;
+  type?: 'artista' | 'fa';
+}
+
+const getInitialUser = (): User | null => {
+  if (typeof window !== "undefined") {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      return JSON.parse(storedUser);
+    }
+  }
+  return null;
+};
+
 const Nav: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(getInitialUser);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
 
@@ -22,13 +39,15 @@ const Nav: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    // placeholder logout: clear any auth state and redirect to home
-    try {
-      localStorage.removeItem("auth");
-    } catch {}
+    localStorage.removeItem("currentUser");
+    setUser(null);
     setOpen(false);
     router.push("/auth");
   };
+
+  const configLink = user?.type === 'artista' 
+    ? '/auth/cadastro-artista' 
+    : '/configurar-conta';
 
   return (
     <header className="w-full sticky top-0 z-50 bg-black/70 backdrop-blur-sm transition-colors">
@@ -48,11 +67,28 @@ const Nav: React.FC = () => {
 
             {open && (
               <div className="absolute left-0 mt-3 w-64 bg-neutral-900 rounded-xl shadow-2xl p-4 text-left">
-                <p className="text-white text-lg font-medium">Marina Sena</p>
-                <p className="text-gray-400 text-sm mb-4">marinas@gmail.com</p>
+                <p className="text-white text-lg font-medium">
+                  {user ? user.name : "Visitante"}
+                </p>
+                <p className="text-gray-400 text-sm mb-4">
+                  {user ? user.email : "Faça login para continuar"}
+                </p>
+                
                 <div className="border-t border-neutral-800 pt-3">
-                  <Link href="#" className="text-sm text-white underline">Configurar conta</Link>
-                  <button onClick={handleLogout} className="block mt-3 text-sm text-red-400 cursor-pointer">Sair</button>
+                  
+                  <Link href={configLink} className="text-sm text-white underline">
+                    Configurar conta
+                  </Link>
+                  
+                  {user ? (
+                    <button onClick={handleLogout} className="block mt-3 text-sm text-red-400 cursor-pointer">
+                      Sair
+                    </button>
+                  ) : (
+                    <Link href="/auth" className="block mt-3 text-sm text-primary cursor-pointer">
+                      Entrar
+                    </Link>
+                  )}
                 </div>
               </div>
             )}
