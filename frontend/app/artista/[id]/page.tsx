@@ -19,7 +19,7 @@ export default function ArtistPage({ params }: ArtistPageProps) {
       <Nav />
       
       {/* SEUS COMPONENTES */}
-      <ArtistSection artistId={params.id} />
+      <ArtistSection artist={params.id} />
       <AgendaSection artistId={params.id} />
       <ProductsSection artistId={params.id} />
       <CommentsSection artistId={params.id} />
