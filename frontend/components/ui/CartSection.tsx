@@ -128,7 +128,7 @@ export default function CartSection() {
                         Ver mais
                       </button>
                       <button 
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item.id, item.size, item.color)}
                         className="text-red-400 hover:text-red-300 transition font-medium font-montserrat text-sm"
                       >
                         Excluir do carrinho

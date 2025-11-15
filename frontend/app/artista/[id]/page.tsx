@@ -1,4 +1,3 @@
-// app/artista/[id]/page.tsx
 import Nav from '@/components/ui/Nav';
 import Footer from '@/components/ui/Footer';
 import ArtistSection from '@/components/ui/ArtistSection';
@@ -15,16 +14,14 @@ interface ArtistPageProps {
 export default function ArtistPage({ params }: ArtistPageProps) {
   return (
     <div className="bg-neutral-900 min-h-screen">
-      {/* NAVEGAÇÃO AQUI */}
       <Nav />
       
-      {/* SEUS COMPONENTES */}
-      <ArtistSection artist={params.id} />
+    
+      <ArtistSection artistId={params.id} />
       <AgendaSection artistId={params.id} />
       <ProductsSection artistId={params.id} />
       <CommentsSection artistId={params.id} />
       
-      {/* RODAPÉ AQUI */}
       <Footer />
     </div>
   );
