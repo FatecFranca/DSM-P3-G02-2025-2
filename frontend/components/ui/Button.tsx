@@ -3,7 +3,7 @@ import React from 'react';
 interface ButtonProps {
   children: React.ReactNode;
   type?: 'button' | 'submit' | 'reset';
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
   className?: string;
   disabled?: boolean;
 }

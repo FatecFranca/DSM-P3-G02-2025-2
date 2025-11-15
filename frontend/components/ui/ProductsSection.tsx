@@ -3,6 +3,8 @@
 import Image from 'next/image';
 import React, { useState } from 'react';
 import Button from './Button'; 
+import { useCart } from '@/context/CartContext';
+import { toast } from 'sonner';
 
 interface Product {
   id: number;
@@ -17,10 +19,100 @@ interface ProductsSectionProps {
   artistId?: string;
 }
 
+const ProductModal: React.FC<{
+  product: Product;
+  isOpen: boolean;
+  onClose: () => void;
+  selectedSize: string;
+  onSizeSelect: (size: string) => void;
+  onAddToCart: () => void;
+}> = ({ product, isOpen, onClose, selectedSize, onSizeSelect, onAddToCart }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-neutral-900 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-neutral-800">
+        <div className="flex flex-col md:flex-row">
+          <div className="md:w-1/2 p-6">
+            <div className="w-full aspect-square bg-neutral-800 rounded-xl overflow-hidden">
+              <Image 
+                src={product.image} 
+                alt={product.description}
+                width={400}
+                height={400}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+          
+          <div className="md:w-1/2 p-6 flex flex-col">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-bold text-white font-poppins">{product.name}</h2>
+              <button 
+                onClick={onClose}
+                className="text-gray-400 hover:text-white text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            
+            <p className="text-gray-300 mb-4 font-montserrat">{product.description}</p>
+            
+            <div className="mb-6">
+              <h3 className="text-white font-semibold mb-2 font-poppins">Detalhes do Produto</h3>
+              <ul className="text-gray-300 text-sm space-y-1 font-montserrat">
+                <li>• 100% Algodão</li>
+                <li>• Estampa de alta qualidade</li>
+                <li>• Lavagem à mão recomendada</li>
+                <li>• Entrega em 5-7 dias úteis</li>
+              </ul>
+            </div>
+            
+            <div className="mb-6">
+              <h3 className="text-white font-semibold mb-3 font-poppins">Selecione o Tamanho</h3>
+              <div className="flex gap-3 flex-wrap">
+                {product.sizes?.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => onSizeSelect(size)}
+                    className={`w-12 h-12 rounded-lg text-sm font-medium transition ${
+                      selectedSize === size
+                        ? 'bg-[#7A3BFF] text-white'
+                        : 'bg-neutral-700 text-gray-300 hover:bg-neutral-600'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="mt-auto">
+              <p className="text-2xl font-bold text-white mb-4 font-montserrat">{product.price}</p>
+              
+              <Button
+                onClick={onAddToCart}
+                disabled={!selectedSize}
+                className={`w-full ${!selectedSize ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {selectedSize ? 'Adicionar ao Carrinho' : 'Selecione um Tamanho'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ProductsSection({ artistId }: ProductsSectionProps) {
   const [q, setQ] = useState("");
   const [notFound, setNotFound] = useState(false);
   const [selectedSizes, setSelectedSizes] = useState<{[key: number]: string}>({});
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [modalSize, setModalSize] = useState("");
+
+  const { addToCart } = useCart();
 
   const handleSizeSelect = (productId: number, size: string) => {
     setSelectedSizes(prev => ({
@@ -29,10 +121,65 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
     }));
   };
 
+  const handleModalSizeSelect = (size: string) => {
+    if (selectedProduct) {
+      setModalSize(size);
+      setSelectedSizes(prev => ({
+        ...prev,
+        [selectedProduct.id]: size
+      }));
+    }
+  };
+
   const handleAddToCart = (productId: number) => {
     const selectedSize = selectedSizes[productId];
-    console.log(`Adicionando produto ${productId} tamanho ${selectedSize} ao carrinho`);
+    
+    if (!selectedSize) {
+      alert("Por favor, selecione um tamanho antes de adicionar ao carrinho");
+      return;
+    }
 
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    let brand = "";
+    if (product.name.includes("Coisas Naturais")) brand = "Coisas Naturais";
+    else if (product.name.includes("De Primeira")) brand = "De Primeira";
+    else if (product.name.includes("Vício Inerente")) brand = "Vício Inerente";
+
+    const cartProduct = {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      brand: brand,
+      size: selectedSize,
+      color: "Preto",
+      price: parseFloat(product.price.replace('R$ ', '').replace(',', '.')),
+      image: product.image
+    };
+
+    addToCart(cartProduct);
+     console.log('🎯 Chamando toast.success...');
+  toast.success('Produto adicionado ao carrinho!');
+  
+  console.log('✅ Produto adicionado:', cartProduct.name);
+  };
+
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setModalSize(selectedSizes[product.id] || "");
+  };
+
+  const handleModalAddToCart = () => {
+    if (selectedProduct && modalSize) {
+      setSelectedSizes(prev => ({
+        ...prev,
+        [selectedProduct.id]: modalSize
+      }));
+      setTimeout(() => {
+        handleAddToCart(selectedProduct.id);
+      }, 100);
+    }
   };
 
   const products = [
@@ -140,7 +287,6 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
     <section id="produtos" className="min-h-screen bg-black py-12">
       <div className="container mx-auto px-6 max-w-6xl">
         <h2 className="text-3xl font-bold text-center mb-8 text-white font-poppins">Produtos</h2>
-        
 
         <div className="max-w-md mx-auto mb-8">
           <div className="relative">
@@ -148,7 +294,6 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
               onSubmit={doSearch}
               className={`bg-neutral-900 rounded-full px-6 py-2 flex items-center gap-3 w-full ${notFound ? 'ring-2 ring-red-500' : ''}`}
             >
-
               <button type="submit" className="cursor-pointer">
                 <Image 
                   src="/busca.png" 
@@ -174,11 +319,13 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
           </div>
         </div>
 
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {filteredProducts.map(product => (
-            <div key={product.id} className="bg-neutral-900 rounded-lg p-6 border border-neutral-800 aspect-square flex flex-col">
-
+            <div 
+              key={product.id} 
+              className="bg-neutral-900 rounded-lg p-4 aspect-square flex flex-col cursor-pointer hover:border-[#7A3BFF] transition"
+              onClick={() => handleProductClick(product)} 
+            >
               <div className="w-full aspect-square bg-neutral-800 rounded-lg mb-4 overflow-hidden">
                 <Image 
                   src={product.image} 
@@ -189,20 +336,21 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
                 />
               </div>
               
-
               <div className="flex flex-col flex-grow justify-between">
                 <div>
                   <h3 className="font-bold text-white text-lg mb-2 font-poppins">{product.name}</h3>
                   <p className="text-gray-400 mb-3 font-montserrat text-sm">{product.description}</p>
                   
-
                   <div className="mb-4">
                     <p className="text-gray-400 text-sm mb-2 font-montserrat">Tamanho:</p>
                     <div className="flex gap-2">
                       {product.sizes?.map((size) => (
                         <button
                           key={size}
-                          onClick={() => handleSizeSelect(product.id, size)}
+                          onClick={(e) => {
+                            e.stopPropagation(); 
+                            handleSizeSelect(product.id, size);
+                          }}
                           className={`w-8 h-8 rounded text-sm font-medium transition ${
                             selectedSizes[product.id] === size
                               ? 'bg-[#7A3BFF] text-white'
@@ -219,9 +367,11 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
                 <div>
                   <p className="text-xl font-bold text-white mb-4 font-montserrat">{product.price}</p>
                   
-
                   <Button
-                    onClick={() => handleAddToCart(product.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToCart(product.id);
+                    }}
                     disabled={!selectedSizes[product.id]}
                     className={!selectedSizes[product.id] ? 'opacity-50 cursor-not-allowed' : ''}
                   >
@@ -233,6 +383,14 @@ export default function ProductsSection({ artistId }: ProductsSectionProps) {
           ))}
         </div>
 
+        <ProductModal
+          product={selectedProduct!}
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          selectedSize={modalSize}
+          onSizeSelect={handleModalSizeSelect}
+          onAddToCart={handleModalAddToCart}
+        />
 
         <div className="text-center mt-8">
           <Button
