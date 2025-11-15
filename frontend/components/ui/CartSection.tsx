@@ -6,25 +6,16 @@ import Link from 'next/link';
 import { useCart } from '@/context/CartContext'; 
 
 export default function CartSection() {
-  const { cartItems, removeFromCart, updateQuantity } = useCart();
-
-  const [address, setAddress] = useState({
-    cep: "",
-    cidade: "",
-    bairro: "",
-    rua: "",
-    numero: "",
-    complemento: "",
-    email: ""
-  });
+  const { cartItems, removeFromCart, updateQuantity, address, updateAddress } = useCart();
 
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   const handleAddressChange = (field: string, value: string) => {
-    setAddress(prev => ({
-      ...prev,
+    const newAddress = {
+      ...address,
       [field]: value
-    }));
+    };
+    updateAddress(newAddress);
     
     if (errors[field]) {
       setErrors(prev => ({...prev, [field]: ''}));
@@ -45,12 +36,10 @@ export default function CartSection() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFinalizePurchase = () => {
-    if (!validateForm()) {
-      return;
+  const handleFinalizarCompra = () => {
+    if (validateForm()) {
+      window.location.href = '/checkout';
     }
-    
-    console.log("Compra finalizada:", { cartItems, address });
   };
 
   const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -163,8 +152,8 @@ export default function CartSection() {
                   Voltar
                 </Link>
                 <button 
-                  onClick={handleFinalizePurchase}
-                  className="flex-1 bg-gradient-to-r from-[#7A3BFF] to-[#FF7A29] text-white px-6 py-3 rounded-full hover:from-[#6A2BFF] hover:to-[#E86A29] transition font-medium font-montserrat"
+                  onClick={handleFinalizarCompra}
+                  className="flex-1 bg-gradient-to-r from-[#7A3BFF] to-[#FF7A29] text-white px-6 py-3 rounded-full hover:from-[#6A2BFF] hover:to-[#E86A29] transition font-medium font-montserrat text-center"
                 >
                   Finalizar Compra
                 </button>

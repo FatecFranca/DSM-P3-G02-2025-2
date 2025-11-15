@@ -1,9 +1,17 @@
-// context/CartContext.tsx
-'use client'; // Importante: Context precisa ser client component
+'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-// Interface para os itens do carrinho
+interface Address {
+  cep: string;
+  cidade: string;
+  bairro: string;
+  rua: string;
+  numero: string;
+  complemento: string;
+  email: string;
+}
+
 interface CartItem {
   id: number;
   name: string;
@@ -16,75 +24,111 @@ interface CartItem {
   quantity: number;
 }
 
-// Interface para as funções do carrinho
 interface CartContextType {
   cartItems: CartItem[];
+  address: Address;
   addToCart: (product: Omit<CartItem, 'quantity'>) => void;
-  removeFromCart: (productId: number) => void;
+  removeFromCart: (productId: number, size: string, color: string) => void;
   updateQuantity: (productId: number, quantity: number) => void;
+  updateAddress: (address: Address) => void;
   clearCart: () => void;
 }
 
-// Cria o Context
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-// Provider - componente que vai envolver sua aplicação
 export function CartProvider({ children }: { children: ReactNode }) {
-  // Estado que armazena os itens do carrinho
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [address, setAddress] = useState<Address>({
+    cep: "",
+    cidade: "",
+    bairro: "",
+    rua: "",
+    numero: "",
+    complemento: "",
+    email: ""
+  });
 
-  // Função para ADICIONAR produto ao carrinho
+  // Carregar dados do localStorage quando o componente montar
+  useEffect(() => {
+    const savedCartItems = localStorage.getItem('cartItems');
+    const savedAddress = localStorage.getItem('address');
+    
+    if (savedCartItems) {
+      setCartItems(JSON.parse(savedCartItems));
+    }
+    
+    if (savedAddress) {
+      setAddress(JSON.parse(savedAddress));
+    }
+  }, []);
+
+  // Salvar cartItems no localStorage sempre que mudar
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  // Salvar address no localStorage sempre que mudar
+  useEffect(() => {
+    localStorage.setItem('address', JSON.stringify(address));
+  }, [address]);
+
   const addToCart = (product: Omit<CartItem, 'quantity'>) => {
     setCartItems(prev => {
-      // Verifica se o produto já está no carrinho (mesmo ID e tamanho)
       const existingItem = prev.find(item => 
-        item.id === product.id && item.size === product.size
+        item.id === product.id && item.size === product.size && item.color === product.color
       );
       
       if (existingItem) {
-        // Se já existe, aumenta a quantidade
         return prev.map(item =>
-          item.id === product.id && item.size === product.size
+          item.id === product.id && item.size === product.size && item.color === product.color
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
       
-      // Se não existe, adiciona novo item com quantidade 1
       return [...prev, { ...product, quantity: 1 }];
     });
   };
 
-  // Função para REMOVER produto do carrinho
-  const removeFromCart = (productId: number) => {
-    setCartItems(prev => prev.filter(item => item.id !== productId));
+  const removeFromCart = (productId: number, size: string, color: string) => {
+    setCartItems(prev => prev.filter(item => 
+      !(item.id === productId && item.size === size && item.color === color)
+    ));
   };
 
-  // Função para ATUALIZAR quantidade
   const updateQuantity = (productId: number, quantity: number) => {
-    if (quantity < 1) return; // Não permite quantidade menor que 1
+    if (quantity < 1) {
+      setCartItems(prev => prev.filter(item => item.id !== productId));
+      return;
+    }
     
     setCartItems(prev =>
       prev.map(item =>
         item.id === productId
-          ? { ...item, quantity } // Atualiza a quantidade
+          ? { ...item, quantity }
           : item
       )
     );
   };
 
-  // Função para LIMPAR carrinho
-  const clearCart = () => {
-    setCartItems([]);
+  const updateAddress = (newAddress: Address) => {
+    setAddress(newAddress);
   };
 
-  // Retorna o Provider com todos os valores e funções
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem('cartItems');
+    localStorage.removeItem('address');
+  };
+
   return (
     <CartContext.Provider value={{
       cartItems,
+      address,
       addToCart,
       removeFromCart,
       updateQuantity,
+      updateAddress,
       clearCart
     }}>
       {children}
@@ -92,7 +136,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Hook personalizado para usar o carrinho
 export function useCart() {
   const context = useContext(CartContext);
   if (context === undefined) {
