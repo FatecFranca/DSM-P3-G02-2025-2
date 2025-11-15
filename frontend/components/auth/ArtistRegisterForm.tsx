@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -9,42 +9,116 @@ import ArtistTextArea from '../ui/ArtistTextArea';
 import ArtistFileDropzone from '../ui/ArtistFileDropzone';
 import Button from '../ui/Button'; 
 
+interface ArtistEvent {
+  id: number;
+  date: string;
+  local: string;
+  name: string;
+  time: string;
+  ticket: string;
+}
+interface ArtistProduct {
+  id: number;
+  name: string;
+  value: string;
+  desc: string;
+  files?: File[];
+}
+interface ArtistProfileData {
+  about: string;
+  spotify: string;
+  instagram: string;
+  xLink: string;
+  facebook: string;
+  events: ArtistEvent[];
+  products: ArtistProduct[];
+  profileFiles?: File[];
+}
+
+interface User {
+  name: string;
+  email: string;
+  type: 'artista' | 'fa';
+  password?: string;
+  artistProfileData?: ArtistProfileData;
+}
+
+const getInitialData = (): ArtistProfileData => {
+  if (typeof window !== "undefined") {
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      const user: User = JSON.parse(storedUser);
+      return user.artistProfileData || {
+        about: '',
+        spotify: '',
+        instagram: '',
+        xLink: '',
+        facebook: '',
+        events: [{ id: Date.now(), date: '', local: '', name: '', time: '', ticket: '' }],
+        products: [{ id: Date.now() + 1, name: '', value: '', desc: '', files: [] }],
+        profileFiles: []
+      };
+    }
+  }
+  return {
+    about: '',
+    spotify: '',
+    instagram: '',
+    xLink: '',
+    facebook: '',
+    events: [{ id: Date.now(), date: '', local: '', name: '', time: '', ticket: '' }],
+    products: [{ id: Date.now() + 1, name: '', value: '', desc: '', files: [] }],
+    profileFiles: []
+  };
+};
+
+
 const ArtistRegisterForm: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [about, setAbout] = useState('');
-  const [spotify, setSpotify] = useState('');
-  const [instagram, setInstagram] = useState('');
-  const [xLink, setXLink] = useState('');
-  const [facebook, setFacebook] = useState('');
-
-  const [events, setEvents] = useState<Array<{
-    id: number;
-    date: string;
-    local: string;
-    name: string;
-    time: string;
-    ticket: string;
-  }>>(() => [
-    { id: Date.now(), date: '', local: '', name: '', time: '', ticket: '' },
-  ]);
-
-  const [products, setProducts] = useState<Array<{
-    id: number;
-    name: string;
-    value: string;
-    desc: string;
-    files?: File[];
-  }>>(() => [
-    { id: Date.now() + 1, name: '', value: '', desc: '', files: [] },
-  ]);
-
-  const [profileFiles, setProfileFiles] = useState<File[]>([]);
+  
+  const [initialData] = useState(getInitialData);
+  
+  const [about, setAbout] = useState(initialData.about);
+  const [spotify, setSpotify] = useState(initialData.spotify);
+  const [instagram, setInstagram] = useState(initialData.instagram);
+  const [xLink, setXLink] = useState(initialData.xLink);
+  const [facebook, setFacebook] = useState(initialData.facebook);
+  const [events, setEvents] = useState<ArtistEvent[]>(initialData.events);
+  const [products, setProducts] = useState<ArtistProduct[]>(initialData.products);
+  const [profileFiles, setProfileFiles] = useState<File[]>(initialData.profileFiles || []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    console.log("Salvando dados do artista...");
+
+    const artistProfileData: ArtistProfileData = {
+      about,
+      spotify,
+      instagram,
+      xLink,
+      facebook,
+      events,
+      products,
+      profileFiles: [] 
+    };
+
+    console.log("Salvando dados do artista:", artistProfileData);
+
+    const currentUser: User = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const updatedCurrentUser = { ...currentUser, artistProfileData };
+    localStorage.setItem("currentUser", JSON.stringify(updatedCurrentUser));
+
+    const usersDB: User[] = JSON.parse(localStorage.getItem("usersDB") || "[]");
+    
+    // 2. CORREÇÃO AQUI: Trocamos 'any' por 'User'
+    const userIndex = usersDB.findIndex((user: User) => user.email === currentUser.email);
+    
+    if (userIndex > -1) {
+      usersDB[userIndex] = updatedCurrentUser;
+      localStorage.setItem("usersDB", JSON.stringify(usersDB));
+    }
+
     setTimeout(() => {
       setLoading(false);
       router.push('/home-artista'); 
@@ -82,6 +156,10 @@ const ArtistRegisterForm: React.FC = () => {
       onSubmit={handleSubmit} 
       className="w-full max-w-4xl p-8 md:p-10 bg-neutral-900 rounded-xl shadow-xl space-y-8"
     >
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white text-center">Configure sua conta de Artista</h1>
+      </div>
+
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-white text-center">
           Compartilhe sua música
@@ -114,7 +192,7 @@ const ArtistRegisterForm: React.FC = () => {
             />
           </div>
           <div className="flex flex-col gap-4"> 
-            <div className="grow min-h-[140px]"> 
+            <div className="flex-grow min-h-[140px]"> 
               <ArtistFileDropzone
                 title="Arraste e insira suas fotos de perfil"
                 description="PNG, JPG (max. 800x400px)"
@@ -198,9 +276,8 @@ const ArtistRegisterForm: React.FC = () => {
               </div>
             </div>
           ))}
-
-          <div className="md:col-span-2">
-            <Button type="button" className="w-full" onClick={addEvent}>
+          <div className="md:col-span-2 flex justify-center">
+            <Button type="button" className="max-w-xs" onClick={addEvent}>
               Adicionar mais um evento
             </Button>
           </div>
@@ -242,9 +319,9 @@ const ArtistRegisterForm: React.FC = () => {
                     value={p.desc}
                     onChange={(e) => handleProductChange(p.id, 'desc', e.target.value)}
                     rows={5}
-                    className="grow"
+                    className="flex-grow"
                   />
-                  <div className="grow min-h-[140px]">
+                  <div className="flex-grow min-h-[140px]">
                     <ArtistFileDropzone
                       title="Arraste e insira as fotos do seu produto"
                       description="PNG, JPG (max. 800x800px)"
@@ -258,9 +335,8 @@ const ArtistRegisterForm: React.FC = () => {
               </div>
             </div>
           ))}
-
-          <div className="md:col-span-2">
-            <Button type="button" className="w-full" onClick={addProduct}>
+          <div className="md:col-span-2 flex justify-center">
+            <Button type="button" className="max-w-xs" onClick={addProduct}>
               Adicionar mais um Produto
             </Button>
           </div>
@@ -269,11 +345,11 @@ const ArtistRegisterForm: React.FC = () => {
 
       <div className="pt-4 space-y-4">
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Criando...' : 'Criar'}
+          {loading ? 'Salvando...' : 'Salvar'}
         </Button>
         <div className="text-center">
-          <Link href="/auth/register" className="text-sm text-gray-400 hover:text-white transition-colors">
-            Voltar
+          <Link href="/home" className="text-sm text-gray-400 hover:text-white transition-colors">
+            Voltar para Home
           </Link>
         </div>
       </div>
