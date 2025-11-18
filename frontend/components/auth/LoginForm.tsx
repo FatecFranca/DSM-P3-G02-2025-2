@@ -1,4 +1,4 @@
-'use client'; 
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -6,49 +6,71 @@ import InputField from '../ui/InputField';
 import Button from '../ui/Button';
 import Link from 'next/link';
 import { Mail, Lock } from 'lucide-react';
-
-interface User {
-  name: string;
-  email: string;
-  type?: string;
-  password?: string;
-}
+import { loginCliente, loginArtista } from '@/lib/auth';
+import { setAuth } from '@/lib/api';
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); 
+  const [userType, setUserType] = useState<'cliente' | 'artista'>('cliente');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    setTimeout(() => {
-      
-      const usersDB: User[] = JSON.parse(localStorage.getItem("usersDB") || "[]");
-      
-      const foundUser = usersDB.find(
-        (user) => user.email === email && user.password === password
-      );
+    try {
+      const response = userType === 'artista'
+        ? await loginArtista(email, password)
+        : await loginCliente(email, password);
 
-      if (foundUser) {
-        localStorage.setItem("currentUser", JSON.stringify(foundUser));
-        router.push('/home');
+      setAuth(response.token, response.user);
+
+      if (response.user.type === 'artista') {
+        router.push('/home-artista');
       } else {
-        setLoading(false);
-        setError("Email ou senha inválidos.");
+        router.push('/home');
       }
-    }, 1000); 
+    } catch (err) {
+      setLoading(false);
+      setError(err instanceof Error ? err.message : 'Email ou senha inválidos.');
+    }
   };
 
   return (
     <div className="w-full max-w-sm">
       <h2 className="text-7xl font-bold text-white mb-8 text-left">Login</h2>
       <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-white text-sm mb-2">Tipo de usuário</label>
+          <div className="flex gap-4">
+            <label className="flex items-center text-white cursor-pointer">
+              <input
+                type="radio"
+                value="cliente"
+                checked={userType === 'cliente'}
+                onChange={(e) => setUserType(e.target.value as 'cliente')}
+                className="mr-2"
+              />
+              Cliente
+            </label>
+            <label className="flex items-center text-white cursor-pointer">
+              <input
+                type="radio"
+                value="artista"
+                checked={userType === 'artista'}
+                onChange={(e) => setUserType(e.target.value as 'artista')}
+                className="mr-2"
+              />
+              Artista
+            </label>
+          </div>
+        </div>
+
         <InputField
           id="email"
           name="email"
@@ -57,6 +79,7 @@ const LoginForm: React.FC = () => {
           icon={<Mail size={20} />}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
         <InputField
           id="password"
@@ -66,6 +89,7 @@ const LoginForm: React.FC = () => {
           icon={<Lock size={20} />}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
         {error && (

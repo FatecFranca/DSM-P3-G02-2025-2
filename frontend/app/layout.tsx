@@ -3,12 +3,16 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from '@/context/CartContext';
+import ConditionalNav from '@/components/ui/ConditionalNav';
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Autenticação", 
-  description: "Cadastre-se ou faça login",  
+  title: "Sonora",
+  description: "A plataforma que conecta artistas musicais brasileiros com seus fãs",
+  icons: {
+    icon: '/sonora_icon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -18,10 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-black`}>
         <CartProvider>
+          <ConditionalNav />
           {children}
-          <Toaster 
+          <Toaster
             position="top-right"
             duration={3000}
             closeButton

@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/context/CartContext';
-import Nav from '@/components/ui/Nav';
 import Footer from '@/components/ui/Footer';
 import { toast } from 'sonner';
 
@@ -20,7 +19,7 @@ export default function CheckoutPage() {
   const [showPopup, setShowPopup] = useState(false);
 
   const totalPrice = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  
+
   const deliveryDate = "15/11/2024";
 
   const handleCardInfoChange = (field: string, value: string) => {
@@ -69,7 +68,7 @@ export default function CheckoutPage() {
       const [month, year] = cardInfo.expiry.split('/');
       const currentYear = new Date().getFullYear() % 100;
       const currentMonth = new Date().getMonth() + 1;
-      
+
       if (!month || !year || month.length !== 2 || year.length !== 2) {
         newErrors.expiry = "Formato inválido (MM/AA)";
       } else if (parseInt(month) < 1 || parseInt(month) > 12) {
@@ -91,7 +90,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateCard()) {
       toast.error("Preencha todos os campos corretamente");
       return;
@@ -108,11 +107,10 @@ export default function CheckoutPage() {
 
   return (
     <div className="bg-black">
-      <Nav />
       <section className="min-h-screen bg-black py-12">
         <div className="container mx-auto px-6 max-w-4xl">
           <h1 className="text-4xl font-bold text-center mb-8 text-white font-poppins">Sua compra</h1>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-6">
               <div className="bg-neutral-900 rounded-xl p-6">
@@ -124,7 +122,7 @@ export default function CheckoutPage() {
                     R$ {totalPrice.toFixed(2)}
                   </p>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <h3 className="text-white font-semibold font-poppins mb-2">Endereço de entrega:</h3>
@@ -146,7 +144,7 @@ export default function CheckoutPage() {
                       Email: {address.email}
                     </p>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-white font-semibold font-poppins mb-2">Data da entrega:</h3>
                     <p className="text-gray-300 font-montserrat text-sm">
@@ -158,7 +156,7 @@ export default function CheckoutPage() {
 
               <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800">
                 <h2 className="text-2xl font-bold text-white font-poppins mb-6">Forma de pagamento:</h2>
-                
+
                 <div className="space-y-4">
                   <div className="flex gap-4 mb-6">
                     <button
@@ -256,7 +254,7 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="flex gap-4 pt-4">
-                      <Link 
+                      <Link
                         href="/cart"
                         className="flex-1 bg-transparent text-white px-6 py-3 rounded-full hover:bg-neutral-800 transition font-medium font-montserrat text-center"
                       >
@@ -276,13 +274,13 @@ export default function CheckoutPage() {
 
             <div className="bg-neutral-900 rounded-xl p-6 border border-neutral-800 h-fit">
               <h2 className="text-2xl font-bold text-white font-poppins mb-6">Seus itens</h2>
-              
+
               <div className="space-y-4">
                 {cartItems.map(item => (
                   <div key={`${item.id}-${item.size}`} className="flex gap-3 border-b border-neutral-800 pb-4 last:border-b-0">
                     <div className="w-16 h-16 bg-neutral-800 rounded-lg overflow-hidden flex-shrink-0">
-                      <img 
-                        src={item.image} 
+                      <img
+                        src={item.image}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
@@ -318,7 +316,7 @@ export default function CheckoutPage() {
               <p className="text-gray-300 font-montserrat mb-6">
                 <strong>Obrigado pela compra!</strong>
               </p>
-            
+
               <button
                 onClick={handleClosePopup}
                 className="bg-gradient-to-r from-[#7A3BFF] to-[#FF7A29] text-white px-8 py-3 rounded-full hover:from-[#6A2BFF] hover:to-[#E86A29] transition font-medium font-montserrat"

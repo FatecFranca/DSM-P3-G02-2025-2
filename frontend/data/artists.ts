@@ -1,8 +1,8 @@
 export const artists = [
-  { 
-    name: "Ebony", 
-    img: "/ebony.svg", 
-    id: "1", 
+  {
+    name: "Ebony",
+    img: "/ebony.svg",
+    id: "691c47435ecfe54f6cdd63dd",
     slug: "ebony",
     images: [
       { id: 1, img: "/fotos/ebony1.jpg", alt: "Ebony 1" },
@@ -10,10 +10,10 @@ export const artists = [
       { id: 3, img: "/fotos/ebony3.jpg", alt: "Ebony 3" },
     ]
   },
-  { 
-    name: "Marina Sena", 
-    img: "/marina_sena.svg", 
-    id: "2", 
+  {
+    name: "Marina Sena",
+    img: "/marina_sena.svg",
+    id: "691c47435ecfe54f6cdd63dc",
     slug: "marina-sena",
     images: [
       { id: 1, img: "/fotos/marina1.jpg", alt: "Marina Sena 1" },
@@ -25,10 +25,10 @@ export const artists = [
       { id: 7, img: "/fotos/marina7.jpg", alt: "Marina Sena 7" }
     ]
   },
-  { 
-    name: "Duquesa", 
-    img: "/duquesa.svg", 
-    id: "3", 
+  {
+    name: "Duquesa",
+    img: "/duquesa.svg",
+    id: "691c47435ecfe54f6cdd63de",
     slug: "duquesa",
     images: [
       { id: 1, img: "/fotos/duquesa1.jpg", alt: "Duquesa 1" },

@@ -1,0 +1,46 @@
+services:
+  # Backend API Service
+  - type: web
+    name: sonora-backend
+    runtime: node
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install && npx prisma generate
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Frontend Next.js Service
+  - type: web
+    name: sonora-frontend
+    runtime: node
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+    autoDeploy: true
+
+databases:
+  # MongoDB Atlas or external database (Render free tier doesn't include MongoDB)
+  # You'll need to provide your own MongoDB connection string
+  # Recommended: Use MongoDB Atlas free tier (https://www.mongodb.com/cloud/atlas)

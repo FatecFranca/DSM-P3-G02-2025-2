@@ -1,4 +1,3 @@
-import Nav from '@/components/ui/Nav';
 import Footer from '@/components/ui/Footer';
 import ArtistSection from '@/components/ui/ArtistSection';
 import AgendaSection from '@/components/ui/AgendaSection';
@@ -14,14 +13,13 @@ interface ArtistPageProps {
 export default function ArtistPage({ params }: ArtistPageProps) {
   return (
     <div className="bg-neutral-900 min-h-screen">
-      <Nav />
-      
-    
+
+
       <ArtistSection artistId={params.id} />
       <AgendaSection artistId={params.id} />
       <ProductsSection artistId={params.id} />
       <CommentsSection artistId={params.id} />
-      
+
       <Footer />
     </div>
   );

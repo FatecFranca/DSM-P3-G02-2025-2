@@ -1,16 +1,62 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useArtists } from "@/hooks/useApi";
 
-import { artists } from "../../data/artists";
+interface ArtistDisplay {
+  id: string;
+  nome: string;
+  img: string;
+  genero_musical?: string;
+}
 
 const ArtistCarousel: React.FC = () => {
-  const [current, setCurrent] = useState<number>(1);
+  const { artists: apiArtists, loading } = useArtists();
+  const [current, setCurrent] = useState<number>(0);
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [dragDelta, setDragDelta] = useState<number>(0);
+  const [artists, setArtists] = useState<ArtistDisplay[]>([]);
+
+  // Image mapping for artists
+  const artistImages: Record<string, string> = {
+    "691c47435ecfe54f6cdd63dd": "/ebony.svg",
+    "691c47435ecfe54f6cdd63dc": "/marina_sena.svg",
+    "691c47435ecfe54f6cdd63de": "/duquesa.svg",
+  };
+
+  // Initialize with fallback data to avoid hydration mismatch
+  useEffect(() => {
+    const fallbackArtists: ArtistDisplay[] = [
+      { id: "691c47435ecfe54f6cdd63dd", nome: "Ebony", img: "/ebony.svg", genero_musical: "Pop/R&B" },
+      { id: "691c47435ecfe54f6cdd63dc", nome: "Marina Sena", img: "/marina_sena.svg", genero_musical: "MPB/Pop" },
+      { id: "691c47435ecfe54f6cdd63de", nome: "Duquesa", img: "/duquesa.svg", genero_musical: "Rap/Hip-Hop" },
+    ];
+
+    if (apiArtists.length > 0) {
+      // Map API artists with their images
+      const mappedArtists = apiArtists.map((artist: any) => ({
+        id: artist.id,
+        nome: artist.nome,
+        img: artistImages[artist.id] || "/placeholder.svg",
+        genero_musical: artist.genero_musical,
+      }));
+      setArtists(mappedArtists);
+    } else if (!loading) {
+      setArtists(fallbackArtists);
+    }
+  }, [apiArtists, loading]);
+
   const n = artists.length;
+
+  if (loading || n === 0) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <p className="text-gray-400">{loading ? "Carregando artistas..." : "Nenhum artista encontrado."}</p>
+      </div>
+    );
+  }
 
   const prev = () => setCurrent((c) => (c - 1 + n) % n);
   const next = () => setCurrent((c) => (c + 1) % n);
@@ -78,12 +124,22 @@ const ArtistCarousel: React.FC = () => {
           className="absolute left-0 top-12 w-40 h-56 rounded-xl overflow-hidden shadow-xl transform transition-transform duration-300 cursor-pointer hover:scale-105"
           style={{ zIndex: 10 }}
         >
-          <Image src={artists[leftIndex].img} alt={artists[leftIndex].name} fill className="object-cover" />
+          <Image
+            src={artists[leftIndex].img}
+            alt={artists[leftIndex].nome}
+            fill
+            className="object-cover"
+          />
         </div>
 
         <div className="relative w-48 h-64 rounded-xl overflow-hidden shadow-2xl transform scale-105 z-20">
           <Link href={`/artista/${artists[current].id}`} className="block w-full h-full">
-            <Image src={artists[current].img} alt={artists[current].name} fill className="object-cover" />
+            <Image
+              src={artists[current].img}
+              alt={artists[current].nome}
+              fill
+              className="object-cover"
+            />
           </Link>
         </div>
 
@@ -92,7 +148,12 @@ const ArtistCarousel: React.FC = () => {
           className="absolute right-0 top-12 w-40 h-56 rounded-xl overflow-hidden shadow-xl transform transition-transform duration-300 cursor-pointer hover:scale-105"
           style={{ zIndex: 10 }}
         >
-          <Image src={artists[rightIndex].img} alt={artists[rightIndex].name} fill className="object-cover" />
+          <Image
+            src={artists[rightIndex].img}
+            alt={artists[rightIndex].nome}
+            fill
+            className="object-cover"
+          />
         </div>
 
         <button
@@ -104,18 +165,22 @@ const ArtistCarousel: React.FC = () => {
         </button>
       </div>
 
-      <div className="mt-4 text-center">
-        <p className="text-white font-semibold mb-2">{artists[current].name}</p>
-        <div className="flex items-center justify-center gap-2">
-          {artists.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrent(i)}
-              className={`w-2 h-2 rounded-full cursor-pointer ${i === current ? 'bg-white' : 'bg-gray-600'}`}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
+      <div className="mt-8 text-center">
+        <h4 className="text-2xl font-semibold">{artists[current].nome}</h4>
+        {artists[current].genero_musical && (
+          <p className="text-gray-400 mt-2">{artists[current].genero_musical}</p>
+        )}
+      </div>
+
+      <div className="flex mt-4 gap-2">
+        {artists.map((_, i) => (
+          <button
+            key={i}
+            aria-label={`go to slide ${i + 1}`}
+            onClick={() => setCurrent(i)}
+            className={`w-2 h-2 rounded-full ${i === current ? 'bg-white' : 'bg-gray-600'}`}
+          />
+        ))}
       </div>
     </div>
   );

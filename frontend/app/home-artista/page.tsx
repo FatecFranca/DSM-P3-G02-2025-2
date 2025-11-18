@@ -2,7 +2,6 @@
 "use client";
 
 import React from "react";
-import Nav from "@/components/ui/Nav";
 import HeroSearch from "@/components/ui/HeroSearch";
 import ArtistCarousel from "@/components/ui/ArtistCarousel";
 import Footer from "@/components/ui/Footer";
@@ -11,7 +10,6 @@ import Image from "next/image";
 const ArtistHomePage: React.FC = () => {
   return (
     <main className="min-h-screen bg-black text-white">
-      <Nav />
       <section id="home" className="max-w-4xl mx-auto px-6 text-center pt-8">
         <div className="py-12">
           <div className="flex flex-col items-center gap-6">

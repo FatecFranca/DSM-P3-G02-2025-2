@@ -1,30 +1,27 @@
-'use client'; 
+'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import InputField from '../ui/InputField';
 import Button from '../ui/Button';
-import { User, Mail, Lock } from 'lucide-react'; 
-
-interface User {
-  name: string;
-  email: string;
-  type: string;
-  password?: string;
-}
+import { User, Mail, Lock } from 'lucide-react';
+import { registerCliente, registerArtista } from '@/lib/auth';
+import { setAuth } from '@/lib/api';
 
 const RegisterForm: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [userType, setUserType] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [dataNascimento, setDataNascimento] = useState('');
+  const [userType, setUserType] = useState<'cliente' | 'artista'>('cliente');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
@@ -35,36 +32,46 @@ const RegisterForm: React.FC = () => {
       return;
     }
 
-    const newUser: User = {
-      name: name,
-      email: email,
-      type: userType,
-      password: password
-    };
-
-    const usersDB: User[] = JSON.parse(localStorage.getItem("usersDB") || "[]");
-    const userExists = usersDB.find((user) => user.email === email);
-
-    if (userExists) {
-      setError('Este e-mail já está cadastrado.');
+    if (userType === 'cliente' && !cpf) {
+      setError('CPF é obrigatório para clientes.');
       setLoading(false);
       return;
     }
 
-    usersDB.push(newUser);
-    localStorage.setItem("usersDB", JSON.stringify(usersDB));
-    localStorage.setItem("currentUser", JSON.stringify(newUser));
-
-    setTimeout(() => {
+    if (userType === 'cliente' && !dataNascimento) {
+      setError('Data de nascimento é obrigatória para clientes.');
       setLoading(false);
-      
+      return;
+    }
+
+    try {
+      let response;
+
       if (userType === 'artista') {
+        response = await registerArtista({
+          nome: name,
+          email,
+          senha: password,
+        });
+
+        setAuth(response.token, response.user);
         router.push('/auth/cadastro-artista');
       } else {
-        router.push('/home'); 
+        response = await registerCliente({
+          nome: name,
+          email,
+          senha: password,
+          cpf,
+          dataNascimento,
+        });
+
+        setAuth(response.token, response.user);
+        router.push('/home');
       }
-      
-    }, 1500);
+    } catch (err) {
+      setLoading(false);
+      setError(err instanceof Error ? err.message : 'Erro ao criar conta.');
+    }
   };
 
   return (
@@ -78,7 +85,7 @@ const RegisterForm: React.FC = () => {
           name="name"
           type="text"
           placeholder="Nome"
-          icon={<User size={20} />} 
+          icon={<User size={20} />}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -92,6 +99,31 @@ const RegisterForm: React.FC = () => {
           onChange={(e) => setEmail(e.target.value)}
         />
 
+        {userType === 'cliente' && (
+          <>
+            <InputField
+              id="cpf"
+              name="cpf"
+              type="text"
+              placeholder="CPF"
+              icon={<User size={20} />}
+              value={cpf}
+              onChange={(e) => setCpf(e.target.value)}
+              required
+            />
+            <InputField
+              id="dataNascimento"
+              name="dataNascimento"
+              type="date"
+              placeholder="Data de Nascimento"
+              icon={<User size={20} />}
+              value={dataNascimento}
+              onChange={(e) => setDataNascimento(e.target.value)}
+              required
+            />
+          </>
+        )}
+
         <InputField
           id="password"
           name="password"
@@ -100,6 +132,7 @@ const RegisterForm: React.FC = () => {
           icon={<Lock size={20} />}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-400 mb-2 ml-1">
@@ -111,7 +144,7 @@ const RegisterForm: React.FC = () => {
               onClick={() => setUserType('artista')}
               className={`py-2.5 rounded-full w-full font-semibold transition-colors duration-200 ${
                 userType === 'artista'
-                  ? 'bg-gradient-to-r from-purple-600 to-orange-500 text-white'
+                  ? 'bg-linear-to-r from-purple-600 to-orange-500 text-white'
                   : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
               }`}
             >
@@ -119,10 +152,10 @@ const RegisterForm: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setUserType('fa')}
+              onClick={() => setUserType('cliente')}
               className={`py-2.5 rounded-full w-full font-semibold transition-colors duration-200 ${
-                userType === 'fa'
-                  ? 'bg-gradient-to-r from-purple-600 to-orange-500 text-white' 
+                userType === 'cliente'
+                  ? 'bg-linear-to-r from-purple-600 to-orange-500 text-white'
                   : 'bg-gray-700 text-gray-400 hover:bg-gray-600'
               }`}
             >
@@ -135,15 +168,15 @@ const RegisterForm: React.FC = () => {
           <p className="text-red-400 text-sm text-center mb-4">{error}</p>
         )}
 
-        <Button 
-          type="submit" 
-          className="mt-4" 
+        <Button
+          type="submit"
+          className="mt-4"
           disabled={loading || !userType || !name || !email || !password}
         >
           {loading ? 'Criando...' : 'Criar'}
         </Button>
       </form>
-      
+
       <div className="text-center mt-8">
         <Link href="/auth" className="text-sm text-gray-400 hover:text-white transition-colors duration-200">
           Voltar
