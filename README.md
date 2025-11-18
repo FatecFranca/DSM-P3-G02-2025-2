@@ -2,7 +2,7 @@
 
 Repositório do GRUPO 02 do Projeto Interdisciplinar do 3º semestre DSM 2025/2.
 
-**Alunos:** Ana Laura Lis Oliveira Zenith, Eduardo Fernandes Grespi, Guilherme Heitor Oliveira Barcelos, Héricles Robert Mendes, João Marcos Landi Sousa.
+**Alunos:** Ana Laura Lis Oliveira Zenith, Eduardo Fernandes Grespi, Héricles Robert Mendes, João Marcos Landi Sousa.
 
 ---
 
@@ -709,7 +709,6 @@ curl -X POST http://localhost:3001/api/auth/cliente/register \
 
 - Ana Laura Lis Oliveira Zenith
 - Eduardo Fernandes Grespi
-- Guilherme Heitor Oliveira Barcelos
 - Héricles Robert Mendes
 - João Marcos Landi Sousa
 
