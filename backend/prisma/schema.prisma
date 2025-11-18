@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Artista {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  nome            String
+  genero_musical  String?
+  bio             String?
+  rede_social     String[]
+  email           String    @unique
+  senha           String
+  telefone        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  produtos        Produto[]
+  eventos         Evento[]
+
+  @@map("artistas")
+}
+
+model Cliente {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  nome            String
+  cpf             String    @unique
+  dataNascimento  DateTime
+  email           String    @unique
+  telefone        String?
+  senha           String
+  endereco        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  pedidos         Pedido[]
+
+  @@map("clientes")
+}
+
+model Produto {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  artista_id      String      @db.ObjectId
+  nome            String
+  descricao       String?
+  preco           Float
+  estoque         Int
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  artista         Artista     @relation(fields: [artista_id], references: [id], onDelete: Cascade)
+  itensPedido     ItemPedido[]
+  fornecedores    FornecedorProduto[]
+
+  @@map("produtos")
+}
+
+model Evento {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  artista_id      String    @db.ObjectId
+  data            DateTime
+  local           String
+  descricao       String?
+  preco_ingresso  Float
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  artista         Artista   @relation(fields: [artista_id], references: [id], onDelete: Cascade)
+
+  @@map("eventos")
+}
+
+model Pedido {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  nome            String
+  data_hora       DateTime    @default(now())
+  cliente_id      String      @db.ObjectId
+  status          String      @default("pendente")
+  total           Float       @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  cliente         Cliente     @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+  itensPedido     ItemPedido[]
+
+  @@map("pedidos")
+}
+
+model ItemPedido {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  num_item        Int
+  quantidade      Int
+  preco_unitario  Float
+  produto_id      String    @db.ObjectId
+  pedido_id       String    @db.ObjectId
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  produto         Produto   @relation(fields: [produto_id], references: [id], onDelete: Cascade)
+  pedido          Pedido    @relation(fields: [pedido_id], references: [id], onDelete: Cascade)
+
+  @@map("itens_pedido")
+}
+
+model Fornecedor {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  razao_social    String
+  nome_fantasia   String?
+  cnpj            String      @unique
+  email           String      @unique
+  endereco        String
+  telefone        String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  produtos        FornecedorProduto[]
+
+  @@map("fornecedores")
+}
+
+// Tabela intermediária para relação many-to-many
+model FornecedorProduto {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  fornecedor_id   String      @db.ObjectId
+  produto_id      String      @db.ObjectId
+  preco_compra    Float?
+  createdAt       DateTime    @default(now())
+
+  fornecedor      Fornecedor  @relation(fields: [fornecedor_id], references: [id], onDelete: Cascade)
+  produto         Produto     @relation(fields: [produto_id], references: [id], onDelete: Cascade)
+
+  @@unique([fornecedor_id, produto_id])
+  @@map("fornecedor_produto")
+}
