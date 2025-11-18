@@ -57,7 +57,7 @@ export default function CartSection() {
               Adicione alguns produtos incríveis ao seu carrinho!
             </p>
             <Link 
-              href="/home#produtos"
+              href="/#produtos"
               className="bg-gradient-to-r from-[#7A3BFF] to-[#FF7A29] text-white px-6 py-3 rounded-full hover:from-[#6A2BFF] hover:to-[#E86A29] transition font-medium font-montserrat inline-block"
             >
               Continuar Comprando
@@ -146,7 +146,7 @@ export default function CartSection() {
               
               <div className="flex gap-4">
                 <Link 
-                  href="/home"
+                  href="/"
                   className="flex-1 bg-transparent text-white px-6 py-3 rounded-full hover:bg-[#7A3BFF] hover:text-white transition font-medium font-montserrat text-center"
                 >
                   Voltar

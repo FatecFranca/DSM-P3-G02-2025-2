@@ -52,7 +52,19 @@ export function getUser() {
 export function setAuth(token: string, user: any) {
   if (typeof window === 'undefined') return;
   localStorage.setItem('token', token);
+  // store raw user object for API use
   localStorage.setItem('user', JSON.stringify(user));
+  // also store a normalized `currentUser` used by UI (Nav expects `name` + `email`)
+  try {
+    const currentUser = {
+      name: user.nome || user.name || '',
+      email: user.email || '',
+      type: user.type || user.tipo || undefined,
+    };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  } catch (e) {
+    // ignore storage errors
+  }
 }
 
 export function clearAuth() {

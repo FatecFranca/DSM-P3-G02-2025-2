@@ -138,7 +138,7 @@ export default function Home() {
         <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
           Junte-se à comunidade que valoriza e impulsiona a música brasileira
         </p>
-        <Link href="/home">
+        <Link href="/">
           <button className="px-10 py-4 text-lg rounded-full bg-gradient-to-r from-purple-600 to-orange-500 hover:from-purple-700 hover:to-orange-600 font-semibold transition-all">
             Explorar Artistas
           </button>

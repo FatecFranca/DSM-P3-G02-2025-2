@@ -102,7 +102,7 @@ export default function CheckoutPage() {
   const handleClosePopup = () => {
     setShowPopup(false);
     clearCart();
-    window.location.href = '/home';
+    window.location.href = '/';
   };
 
   return (

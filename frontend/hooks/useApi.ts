@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { artists as localArtists } from '../data/artists';
 
 export function useArtists() {
   const [artists, setArtists] = useState([]);
@@ -27,7 +28,7 @@ export function useArtists() {
   return { artists, loading, error };
 }
 
-export function useArtist(id: string) {
+export function useArtist(id?: string) {
   const [artist, setArtist] = useState<{
     id: string;
     nome: string;
@@ -54,6 +55,24 @@ export function useArtist(id: string) {
         setArtist(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
+        // Fallback to local data when API is down or the fetch fails
+        try {
+          const found = localArtists.find(a => a.id === id);
+          if (found) {
+            // Map local structure to the shape expected by consumers
+            setArtist({
+              id: found.id,
+              nome: found.name || found.nome,
+              genero_musical: (found as any).genero_musical,
+              bio: (found as any).bio,
+              rede_social: (found as any).rede_social || [],
+              email: ''
+            });
+            setError(null);
+          }
+        } catch (e) {
+          // ignore fallback errors
+        }
       } finally {
         setLoading(false);
       }

@@ -10,15 +10,18 @@ interface ArtistPageProps {
   };
 }
 
-export default function ArtistPage({ params }: ArtistPageProps) {
+export default async function ArtistPage({ params }: ArtistPageProps) {
+  // In some Next.js versions `params` can be a Promise; unwrap to be safe
+  const resolvedParams = await params as { id: string };
+  const id = resolvedParams?.id;
+
   return (
     <div className="bg-neutral-900 min-h-screen">
 
-
-      <ArtistSection artistId={params.id} />
-      <AgendaSection artistId={params.id} />
-      <ProductsSection artistId={params.id} />
-      <CommentsSection artistId={params.id} />
+      <ArtistSection artistId={id} />
+      <AgendaSection artistId={id} />
+      <ProductsSection artistId={id} />
+      <CommentsSection artistId={id} />
 
       <Footer />
     </div>

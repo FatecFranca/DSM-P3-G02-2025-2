@@ -66,7 +66,7 @@ const RegisterForm: React.FC = () => {
         });
 
         setAuth(response.token, response.user);
-        router.push('/home');
+        router.push('/');
       }
     } catch (err) {
       setLoading(false);

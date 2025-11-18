@@ -45,7 +45,7 @@ const ConfigForm: React.FC = () => {
   useEffect(() => {
     if (showSuccess) {
       const timer = setTimeout(() => {
-        router.push('/home');
+        router.push('/');
       }, 2000);
       return () => clearTimeout(timer);
     }

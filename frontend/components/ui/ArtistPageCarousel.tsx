@@ -3,14 +3,21 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { artists } from "../../data/artists";
+import { useArtist } from '@/hooks/useApi';
 
 interface ArtistPageCarouselProps {
-  artistId: string;
+  artistId?: string;
 }
 
 const ArtistPageCarousel: React.FC<ArtistPageCarouselProps> = ({ artistId }) => {
-  const artist = artists.find(a => a.id === artistId);
-  const images = artist?.images || [];
+  const local = artists.find(a => a.id === artistId);
+  const { artist: apiArtist } = useArtist(artistId);
+  const images = local?.images || (apiArtist as any)?.images || [];
+
+  if (typeof window !== 'undefined') {
+    // eslint-disable-next-line no-console
+    console.debug('[ArtistPageCarousel] artistId =', artistId, 'foundLocal=', !!local, 'localImages=', local?.images?.length, 'apiImages=', (apiArtist as any)?.images?.length);
+  }
   
   const [current, setCurrent] = useState<number>(0);
   const [dragStart, setDragStart] = useState<number | null>(null);

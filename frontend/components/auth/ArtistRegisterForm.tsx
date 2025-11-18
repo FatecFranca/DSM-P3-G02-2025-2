@@ -100,28 +100,40 @@ const ArtistRegisterForm: React.FC = () => {
       facebook,
       events,
       products,
-      profileFiles: [] 
+      profileFiles: profileFiles || []
     };
 
     console.log("Salvando dados do artista:", artistProfileData);
 
     const currentUser: User = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const rawUser = JSON.parse(localStorage.getItem('user') || "{}");
+
     const updatedCurrentUser = { ...currentUser, artistProfileData };
     localStorage.setItem("currentUser", JSON.stringify(updatedCurrentUser));
 
+    // Also update the raw `user` object (this one contains the id used in routes)
+    try {
+      const updatedRawUser = { ...rawUser, artistProfileData };
+      localStorage.setItem('user', JSON.stringify(updatedRawUser));
+    } catch (e) {
+      // ignore storage errors
+    }
+
     const usersDB: User[] = JSON.parse(localStorage.getItem("usersDB") || "[]");
-    
-    // 2. CORREÇÃO AQUI: Trocamos 'any' por 'User'
-    const userIndex = usersDB.findIndex((user: User) => user.email === currentUser.email);
-    
+    const userIndex = usersDB.findIndex((user: User) => user.email === (currentUser.email || rawUser.email));
     if (userIndex > -1) {
-      usersDB[userIndex] = updatedCurrentUser;
+      usersDB[userIndex] = { ...usersDB[userIndex], artistProfileData };
       localStorage.setItem("usersDB", JSON.stringify(usersDB));
     }
 
     setTimeout(() => {
       setLoading(false);
-      router.push('/home-artista'); 
+      const id = rawUser?.id || rawUser?.Id || rawUser?.userId;
+      if (id) {
+        router.push(`/artista/${id}`);
+      } else {
+        router.push('/artista');
+      }
     }, 1500);
   };
 
@@ -348,7 +360,7 @@ const ArtistRegisterForm: React.FC = () => {
           {loading ? 'Salvando...' : 'Salvar'}
         </Button>
         <div className="text-center">
-          <Link href="/home" className="text-sm text-gray-400 hover:text-white transition-colors">
+          <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
             Voltar para Home
           </Link>
         </div>

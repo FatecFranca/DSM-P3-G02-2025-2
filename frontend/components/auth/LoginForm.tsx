@@ -28,15 +28,22 @@ const LoginForm: React.FC = () => {
         ? await loginArtista(email, password)
         : await loginCliente(email, password);
 
+      // DEBUG: log full response
+      // eslint-disable-next-line no-console
+      console.debug('[LoginForm] auth response =', response);
+
       setAuth(response.token, response.user);
 
       if (response.user.type === 'artista') {
-        router.push('/home-artista');
+        // Redirect to the specific artist page using the returned id
+        router.push(`/artista/${response.user.id}`);
       } else {
-        router.push('/home');
+        router.push('/');
       }
     } catch (err) {
       setLoading(false);
+      // eslint-disable-next-line no-console
+      console.error('[LoginForm] login error =', err);
       setError(err instanceof Error ? err.message : 'Email ou senha inválidos.');
     }
   };

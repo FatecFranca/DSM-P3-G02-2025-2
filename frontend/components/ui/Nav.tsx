@@ -5,6 +5,7 @@ import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { clearAuth } from '@/lib/api';
 
 interface User {
   name: string;
@@ -47,7 +48,7 @@ const Nav: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("currentUser");
+    clearAuth();
     setUser(null);
     setOpen(false);
     setAccountMenuOpen(false);

@@ -1,4 +1,4 @@
-// frontend/app/home-artista/page.tsx
+// frontend/app/artista/page.tsx
 "use client";
 
 import React from "react";

@@ -39,15 +39,56 @@ const artistDefaults: Record<string, { img: string; defaultName: string; socialL
 };
 
 export default function ArtistSection({ artistId }: ArtistSectionProps) {
-  const { artist, loading, error } = useArtist(artistId || "691c47435ecfe54f6cdd63dc");
+  const { artist, loading, error } = useArtist(artistId);
+
+  // DEBUG: log artistId and fetched artist to browser console
+  if (typeof window !== 'undefined') {
+    // eslint-disable-next-line no-console
+    console.debug('[ArtistSection] artistId prop =', artistId, 'artist(from hook) =', artist, 'loading=', loading, 'error=', error);
+  }
 
   const artistData = useMemo(() => {
-    const defaults = artistDefaults[artistId || "691c47435ecfe54f6cdd63dc"];
+    const defaults = artistId ? artistDefaults[artistId] : undefined;
+
+    // try to read local profile saved in localStorage (client-only)
+    let localProfile: any = undefined;
+    let localRawUser: any = undefined;
+    if (typeof window !== 'undefined') {
+      try {
+        localRawUser = JSON.parse(localStorage.getItem('user') || 'null');
+      } catch {}
+      try {
+        if (!localProfile && localRawUser && (localRawUser.id === artistId || localRawUser.id === artist?.id)) {
+          localProfile = localRawUser.artistProfileData;
+        }
+      } catch {}
+
+      try {
+        if (!localProfile) {
+          const usersDB = JSON.parse(localStorage.getItem('usersDB') || '[]');
+          const found = usersDB.find((u: any) => (u.id === artistId || u.id === artist?.id));
+          if (found) localProfile = found.artistProfileData;
+        }
+      } catch {}
+    }
+
+    const nomeFromLocal = localRawUser?.nome || localRawUser?.name;
+
+    const socialFromLocal = {
+      spotify: localProfile?.spotify || undefined,
+      instagram: localProfile?.instagram || undefined,
+      facebook: localProfile?.facebook || undefined,
+      twitter: localProfile?.xLink || undefined
+    };
+
     return {
-      nome: artist?.nome || defaults?.defaultName || "Artista",
-      bio: artist?.bio || "Informações sobre o artista em breve.",
-      rede_social: artist?.rede_social || [],
-      socialLinks: defaults?.socialLinks || {}
+      nome: artist?.nome || nomeFromLocal || defaults?.defaultName || "Artista",
+      bio: artist?.bio || localProfile?.about || "Informações sobre o artista em breve.",
+      rede_social: artist?.rede_social || localProfile?.rede_social || [],
+      socialLinks: {
+        ...(defaults?.socialLinks || {}),
+        ...(socialFromLocal || {})
+      }
     };
   }, [artist, artistId]);
 
@@ -86,7 +127,7 @@ export default function ArtistSection({ artistId }: ArtistSectionProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
 
           <div className="flex justify-center">
-            <ArtistPageCarousel artistId={artistId || "691c47435ecfe54f6cdd63dc"} />
+            <ArtistPageCarousel artistId={artistId} />
           </div>
 
           <div className="space-y-6">
