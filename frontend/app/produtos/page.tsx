@@ -97,7 +97,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
             <div className="mt-auto">
               <p className="text-2xl font-bold text-white mb-4 font-montserrat">
-                R$ {typeof product.preco === 'number' ? product.preco.toFixed(2).replace('.', ',') : '0,00'}
+                R$ {product.preco.toFixed(2).replace('.', ',')}
               </p>
 
               <Button
@@ -268,7 +268,7 @@ const ProdutosPage: React.FC = () => {
       brand: brand,
       size: selectedSize,
       color: "Preto",
-      price: typeof product.preco === 'number' ? product.preco : parseFloat(product.preco.toString().replace('R$ ', '').replace(',', '.')),
+      price: product.preco,
       image: product.image || "/placeholder.svg"
     };
 
@@ -393,7 +393,7 @@ const ProdutosPage: React.FC = () => {
                   </div>
 
                   <p className="text-xl font-bold text-white mb-4 font-montserrat">
-                    R$ {typeof product.preco === 'number' ? product.preco.toFixed(2).replace('.', ',') : '0,00'}
+                    R$ {product.preco.toFixed(2).replace('.', ',')}
                   </p>
 
                   <Button

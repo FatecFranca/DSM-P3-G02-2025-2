@@ -123,6 +123,7 @@ export function useEvents(filters?: { artista_id?: string }) {
   useEffect(() => {
     async function fetchEvents() {
       try {
+        setLoading(true);
         const params = new URLSearchParams();
         if (filters?.artista_id) params.append('artista_id', filters.artista_id);
 
@@ -133,8 +134,10 @@ export function useEvents(filters?: { artista_id?: string }) {
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
         setEvents(data);
+        setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
+        setEvents([]);
       } finally {
         setLoading(false);
       }

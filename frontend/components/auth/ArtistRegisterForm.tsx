@@ -6,363 +6,381 @@ import Link from 'next/link';
 
 import ArtistInputField from '../ui/ArtistInputField';
 import ArtistTextArea from '../ui/ArtistTextArea';
-import ArtistFileDropzone from '../ui/ArtistFileDropzone';
-import Button from '../ui/Button'; 
+import Button from '../ui/Button';
+import { getUser } from '@/lib/api';
+import { getEventos, createEvento, updateEvento, deleteEvento } from '@/lib/events';
+import { getProdutos, createProduto, updateProduto, deleteProduto } from '@/lib/products';
 
-interface ArtistEvent {
-  id: number;
-  date: string;
+interface ApiEvent {
+  id?: string;
+  artista_id?: string;
+  data: string;
   local: string;
-  name: string;
-  time: string;
-  ticket: string;
-}
-interface ArtistProduct {
-  id: number;
-  name: string;
-  value: string;
-  desc: string;
-  files?: File[];
-}
-interface ArtistProfileData {
-  about: string;
-  spotify: string;
-  instagram: string;
-  xLink: string;
-  facebook: string;
-  events: ArtistEvent[];
-  products: ArtistProduct[];
-  profileFiles?: File[];
+  descricao?: string;
+  preco_ingresso: number;
 }
 
-interface User {
-  name: string;
-  email: string;
-  type: 'artista' | 'fa';
-  password?: string;
-  artistProfileData?: ArtistProfileData;
+interface ApiProduct {
+  id?: string;
+  artista_id?: string;
+  nome: string;
+  preco: number;
+  estoque: number;
+  descricao?: string;
 }
-
-const getInitialData = (): ArtistProfileData => {
-  if (typeof window !== "undefined") {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      const user: User = JSON.parse(storedUser);
-      return user.artistProfileData || {
-        about: '',
-        spotify: '',
-        instagram: '',
-        xLink: '',
-        facebook: '',
-        events: [{ id: Date.now(), date: '', local: '', name: '', time: '', ticket: '' }],
-        products: [{ id: Date.now() + 1, name: '', value: '', desc: '', files: [] }],
-        profileFiles: []
-      };
-    }
-  }
-  return {
-    about: '',
-    spotify: '',
-    instagram: '',
-    xLink: '',
-    facebook: '',
-    events: [{ id: Date.now(), date: '', local: '', name: '', time: '', ticket: '' }],
-    products: [{ id: Date.now() + 1, name: '', value: '', desc: '', files: [] }],
-    profileFiles: []
-  };
-};
-
 
 const ArtistRegisterForm: React.FC = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  
-  const [initialData] = useState(getInitialData);
-  
-  const [about, setAbout] = useState(initialData.about);
-  const [spotify, setSpotify] = useState(initialData.spotify);
-  const [instagram, setInstagram] = useState(initialData.instagram);
-  const [xLink, setXLink] = useState(initialData.xLink);
-  const [facebook, setFacebook] = useState(initialData.facebook);
-  const [events, setEvents] = useState<ArtistEvent[]>(initialData.events);
-  const [products, setProducts] = useState<ArtistProduct[]>(initialData.products);
-  const [profileFiles, setProfileFiles] = useState<File[]>(initialData.profileFiles || []);
+  const [mounted, setMounted] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const [user, setUser] = useState<any>(null);
+  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [products, setProducts] = useState<ApiProduct[]>([]);
+  const [deletedEventIds, setDeletedEventIds] = useState<string[]>([]);
+  const [deletedProductIds, setDeletedProductIds] = useState<string[]>([]);
 
-    const artistProfileData: ArtistProfileData = {
-      about,
-      spotify,
-      instagram,
-      xLink,
-      facebook,
-      events,
-      products,
-      profileFiles: profileFiles || []
-    };
+  useEffect(() => {
+    setMounted(true);
+    const userData = getUser();
+    setUser(userData);
 
-    console.log("Salvando dados do artista:", artistProfileData);
+    if (userData?.id) {
+      loadArtistData(userData.id);
+    }
+  }, []);
 
-    const currentUser: User = JSON.parse(localStorage.getItem("currentUser") || "{}");
-    const rawUser = JSON.parse(localStorage.getItem('user') || "{}");
-
-    const updatedCurrentUser = { ...currentUser, artistProfileData };
-    localStorage.setItem("currentUser", JSON.stringify(updatedCurrentUser));
-
-    // Also update the raw `user` object (this one contains the id used in routes)
+  const loadArtistData = async (artistId: string) => {
     try {
-      const updatedRawUser = { ...rawUser, artistProfileData };
-      localStorage.setItem('user', JSON.stringify(updatedRawUser));
-    } catch (e) {
-      // ignore storage errors
-    }
+      setLoading(true);
+      const [eventsData, productsData] = await Promise.all([
+        getEventos({ artista_id: artistId }),
+        getProdutos({ artista_id: artistId })
+      ]);
 
-    const usersDB: User[] = JSON.parse(localStorage.getItem("usersDB") || "[]");
-    const userIndex = usersDB.findIndex((user: User) => user.email === (currentUser.email || rawUser.email));
-    if (userIndex > -1) {
-      usersDB[userIndex] = { ...usersDB[userIndex], artistProfileData };
-      localStorage.setItem("usersDB", JSON.stringify(usersDB));
-    }
-
-    setTimeout(() => {
+      setEvents(eventsData.length > 0 ? eventsData : [{ data: '', local: '', descricao: '', preco_ingresso: 0 }]);
+      setProducts(productsData.length > 0 ? productsData : [{ nome: '', preco: 0, estoque: 0, descricao: '' }]);
+    } catch (error) {
+      console.error('Error loading artist data:', error);
+      setEvents([{ data: '', local: '', descricao: '', preco_ingresso: 0 }]);
+      setProducts([{ nome: '', preco: 0, estoque: 0, descricao: '' }]);
+    } finally {
       setLoading(false);
-      const id = rawUser?.id || rawUser?.Id || rawUser?.userId;
-      if (id) {
-        router.push(`/artista/${id}`);
-      } else {
-        router.push('/artista');
-      }
-    }, 1500);
+    }
   };
 
-  const handleEventChange = (id: number, field: string, value: string) => {
-    setEvents((prev) => prev.map((ev) => (ev.id === id ? { ...ev, [field]: value } : ev)));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!user?.id) {
+      setMessage({ type: 'error', text: 'Usuário não encontrado. Faça login novamente.' });
+      return;
+    }
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      // Handle deleted events
+      for (const eventId of deletedEventIds) {
+        await deleteEvento(eventId);
+      }
+
+      // Handle deleted products
+      for (const productId of deletedProductIds) {
+        await deleteProduto(productId);
+      }
+
+      // Handle events (create/update)
+      const eventPromises = events.map(async (event) => {
+        if (!event.data || !event.local) return; // Skip empty events
+
+        const eventData = {
+          artista_id: user.id,
+          data: event.data,
+          local: event.local,
+          descricao: event.descricao || '',
+          preco_ingresso: event.preco_ingresso || 0
+        };
+
+        if (event.id) {
+          return updateEvento(event.id, eventData);
+        } else {
+          return createEvento(eventData);
+        }
+      });
+
+      // Handle products (create/update)
+      const productPromises = products.map(async (product) => {
+        if (!product.nome) return; // Skip empty products
+
+        const productData = {
+          artista_id: user.id,
+          nome: product.nome,
+          preco: product.preco || 0,
+          estoque: product.estoque || 0,
+          descricao: product.descricao || ''
+        };
+
+        if (product.id) {
+          return updateProduto(product.id, productData);
+        } else {
+          return createProduto(productData);
+        }
+      });
+
+      await Promise.all([...eventPromises, ...productPromises]);
+
+      setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
+      setDeletedEventIds([]);
+      setDeletedProductIds([]);
+
+      // Reload data to get updated IDs
+      await loadArtistData(user.id);
+
+      setTimeout(() => {
+        router.push(`/artista/${user.id}`);
+      }, 1500);
+    } catch (error: any) {
+      console.error('Error saving artist profile:', error);
+      setMessage({ type: 'error', text: error.message || 'Erro ao salvar perfil. Tente novamente.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEventChange = (index: number, field: keyof ApiEvent, value: any) => {
+    setEvents((prev) => prev.map((ev, i) => (i === index ? { ...ev, [field]: value } : ev)));
   };
 
   const addEvent = () => {
-    setEvents((prev) => [
-      ...prev,
-      { id: Date.now() + Math.floor(Math.random() * 1000), date: '', local: '', name: '', time: '', ticket: '' },
-    ]);
+    setEvents((prev) => [...prev, { data: '', local: '', descricao: '', preco_ingresso: 0 }]);
   };
 
-  const handleProductChange = (id: number, field: string, value: string) => {
-    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, [field]: value } : p)));
+  const removeEvent = (index: number) => {
+    const event = events[index];
+    if (event.id) {
+      setDeletedEventIds(prev => [...prev, event.id!]);
+    }
+    setEvents((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleProductFilesChange = (id: number, files: File[]) => {
-    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, files } : p)));
+  const handleProductChange = (index: number, field: keyof ApiProduct, value: any) => {
+    setProducts((prev) => prev.map((p, i) => (i === index ? { ...p, [field]: value } : p)));
   };
 
   const addProduct = () => {
-    setProducts((prev) => [
-      ...prev,
-      { id: Date.now() + Math.floor(Math.random() * 1000), name: '', value: '', desc: '', files: [] },
-    ]);
+    setProducts((prev) => [...prev, { nome: '', preco: 0, estoque: 0, descricao: '' }]);
   };
 
+  const removeProduct = (index: number) => {
+    const product = products[index];
+    if (product.id) {
+      setDeletedProductIds(prev => [...prev, product.id!]);
+    }
+    setProducts((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  if (!mounted) {
+    return (
+      <div className="w-full max-w-6xl mx-auto p-6 md:p-10 bg-neutral-900 rounded-xl shadow-xl">
+        <div className="flex justify-center items-center h-64">
+          <p className="text-gray-400">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      className="w-full max-w-4xl p-8 md:p-10 bg-neutral-900 rounded-xl shadow-xl space-y-8"
-    >
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white text-center">Configure sua conta de Artista</h1>
+    <form onSubmit={handleSubmit} className="w-full max-w-6xl mx-auto space-y-8">
+      {/* Header Section */}
+      <div className="bg-neutral-900 rounded-xl shadow-xl p-6 md:p-8 border border-gray-800">
+        <h1 className="text-3xl md:text-4xl font-bold text-white text-center mb-2">
+          Configure sua Conta de Artista
+        </h1>
+        <p className="text-gray-400 text-center">
+          Gerencie seus eventos e produtos
+        </p>
       </div>
 
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white text-center">
-          Compartilhe sua música
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-4">
-            <ArtistTextArea
-              id="about"
-              name="about"
-              placeholder="Sobre você, compartilhe aqui sua história..."
-              value={about}
-              onChange={(e) => setAbout(e.target.value)}
-              rows={5}
-            />
-            <ArtistInputField
-              id="spotify"
-              name="spotify"
-              type="text"
-              placeholder="Link do seu Spotify"
-              value={spotify}
-              onChange={(e) => setSpotify(e.target.value)}
-            />
-            <ArtistInputField
-              id="instagram"
-              name="instagram"
-              type="text"
-              placeholder="Link do seu Instagram"
-              value={instagram}
-              onChange={(e) => setInstagram(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-4"> 
-            <div className="flex-grow min-h-[140px]"> 
-              <ArtistFileDropzone
-                title="Arraste e insira suas fotos de perfil"
-                description="PNG, JPG (max. 800x400px)"
-                accept="image/png,image/jpeg"
-                multiple={true}
-                maxFiles={5}
-                onFilesChange={(f) => setProfileFiles(f)}
-              />
-            </div>
-            <ArtistInputField
-              id="x"
-              name="x"
-              type="text"
-              placeholder="Link do seu X"
-              value={xLink}
-              onChange={(e) => setXLink(e.target.value)}
-            />
-            <ArtistInputField
-              id="facebook"
-              name="facebook"
-              type="text"
-              placeholder="Link do seu Facebook"
-              value={facebook}
-              onChange={(e) => setFacebook(e.target.value)}
-            />
-          </div>
+      {message && (
+        <div className={`p-4 rounded-lg ${message.type === 'success' ? 'bg-green-900/50 text-green-300 border border-green-700' : 'bg-red-900/50 text-red-300 border border-red-700'}`}>
+          {message.text}
         </div>
-      </div>
+      )}
 
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white text-center">
-          Compartilhe sua Agenda
-        </h2>
-        <div className="space-y-4 mt-4">
-          {events.map((ev, idx) => (
-            <div key={ev.id}>
-              <p className="text-lg text-gray-300 font-semibold">{`${idx + 1}º Evento`}</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                <ArtistInputField
-                  id={`eventDate-${ev.id}`}
-                  name={`eventDate-${ev.id}`}
-                  type="text"
-                  placeholder="Data: __/__/__"
-                  value={ev.date}
-                  onChange={(e) => handleEventChange(ev.id, 'date', e.target.value)}
-                />
-                <ArtistInputField
-                  id={`eventLocal-${ev.id}`}
-                  name={`eventLocal-${ev.id}`}
-                  type="text"
-                  placeholder="Local"
-                  value={ev.local}
-                  onChange={(e) => handleEventChange(ev.id, 'local', e.target.value)}
-                />
-                <ArtistInputField
-                  id={`eventName-${ev.id}`}
-                  name={`eventName-${ev.id}`}
-                  type="text"
-                  placeholder="Nome do evento"
-                  value={ev.name}
-                  onChange={(e) => handleEventChange(ev.id, 'name', e.target.value)}
-                />
-                <ArtistInputField
-                  id={`eventTime-${ev.id}`}
-                  name={`eventTime-${ev.id}`}
-                  type="text"
-                  placeholder="Horário: 00h00min"
-                  value={ev.time}
-                  onChange={(e) => handleEventChange(ev.id, 'time', e.target.value)}
-                />
-                <div className="md:col-span-2">
-                  <ArtistInputField
-                    id={`eventTicket-${ev.id}`}
-                    name={`eventTicket-${ev.id}`}
-                    type="text"
-                    placeholder="Link da compra do ingresso"
-                    value={ev.ticket}
-                    onChange={(e) => handleEventChange(ev.id, 'ticket', e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-          <div className="md:col-span-2 flex justify-center">
-            <Button type="button" className="max-w-xs" onClick={addEvent}>
-              Adicionar mais um evento
-            </Button>
-          </div>
+      {/* Events Section */}
+      <div className="bg-neutral-900 rounded-xl shadow-xl p-6 md:p-8 border border-gray-800">
+        <div className="mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+            📅 Agenda de Eventos
+          </h2>
+          <p className="text-gray-400 text-sm">Adicione os eventos onde você irá se apresentar</p>
         </div>
-      </div>
 
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white text-center">
-          Compartilhe seus produtos
-        </h2>
-        <div className="space-y-4 mt-4">
-          {products.map((p, idx) => (
-            <div key={p.id}>
-              <p className="text-lg text-gray-300 font-semibold">{`Produto ${idx + 1}`}</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                <div className="space-y-4">
-                  <ArtistInputField
-                    id={`productName-${p.id}`}
-                    name={`productName-${p.id}`}
-                    type="text"
-                    placeholder="Nome do produto"
-                    value={p.name}
-                    onChange={(e) => handleProductChange(p.id, 'name', e.target.value)}
-                  />
-                  <ArtistInputField
-                    id={`productValue-${p.id}`}
-                    name={`productValue-${p.id}`}
-                    type="text"
-                    placeholder="Valor do produto: R$ 00,00"
-                    value={p.value}
-                    onChange={(e) => handleProductChange(p.id, 'value', e.target.value)}
-                  />
+        <div className="space-y-6">
+          {loading && events.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">Carregando eventos...</div>
+          ) : (
+            events.map((event, idx) => (
+              <div key={idx} className="bg-black/30 p-4 md:p-6 rounded-lg border border-gray-800">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-white">Evento {idx + 1}</h3>
+                  {events.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeEvent(idx)}
+                      className="text-red-400 hover:text-red-300 text-sm transition"
+                    >
+                      Remover
+                    </button>
+                  )}
                 </div>
-                <div className="flex flex-col gap-4">
-                  <ArtistTextArea
-                    id={`productDesc-${p.id}`}
-                    name={`productDesc-${p.id}`}
-                    placeholder="Descrição do produto"
-                    value={p.desc}
-                    onChange={(e) => handleProductChange(p.id, 'desc', e.target.value)}
-                    rows={5}
-                    className="flex-grow"
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ArtistInputField
+                    id={`eventDate-${idx}`}
+                    name={`eventDate-${idx}`}
+                    type="datetime-local"
+                    placeholder="Data e hora"
+                    value={event.data}
+                    onChange={(e) => handleEventChange(idx, 'data', e.target.value)}
+                    required
                   />
-                  <div className="flex-grow min-h-[140px]">
-                    <ArtistFileDropzone
-                      title="Arraste e insira as fotos do seu produto"
-                      description="PNG, JPG (max. 800x800px)"
-                      accept="image/png,image/jpeg"
-                      multiple={true}
-                      maxFiles={5}
-                      onFilesChange={(files) => handleProductFilesChange(p.id, files)}
+                  <ArtistInputField
+                    id={`eventLocal-${idx}`}
+                    name={`eventLocal-${idx}`}
+                    type="text"
+                    placeholder="Local do evento"
+                    value={event.local}
+                    onChange={(e) => handleEventChange(idx, 'local', e.target.value)}
+                    required
+                  />
+                  <ArtistInputField
+                    id={`eventPrice-${idx}`}
+                    name={`eventPrice-${idx}`}
+                    type="number"
+                    step="0.01"
+                    placeholder="Preço do ingresso (R$)"
+                    value={event.preco_ingresso || ''}
+                    onChange={(e) => handleEventChange(idx, 'preco_ingresso', parseFloat(e.target.value) || 0)}
+                    required
+                  />
+                  <div className="md:col-span-2">
+                    <ArtistTextArea
+                      id={`eventDesc-${idx}`}
+                      name={`eventDesc-${idx}`}
+                      placeholder="Descrição do evento"
+                      value={event.descricao || ''}
+                      onChange={(e) => handleEventChange(idx, 'descricao', e.target.value)}
+                      rows={3}
                     />
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-          <div className="md:col-span-2 flex justify-center">
-            <Button type="button" className="max-w-xs" onClick={addProduct}>
-              Adicionar mais um Produto
-            </Button>
-          </div>
+            ))
+          )}
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <Button type="button" onClick={addEvent} className="max-w-xs">
+            + Adicionar Evento
+          </Button>
         </div>
       </div>
 
-      <div className="pt-4 space-y-4">
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? 'Salvando...' : 'Salvar'}
-        </Button>
-        <div className="text-center">
-          <Link href="/" className="text-sm text-gray-400 hover:text-white transition-colors">
-            Voltar para Home
-          </Link>
+      {/* Products Section */}
+      <div className="bg-neutral-900 rounded-xl shadow-xl p-6 md:p-8 border border-gray-800">
+        <div className="mb-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+            🛍️ Produtos
+          </h2>
+          <p className="text-gray-400 text-sm">Cadastre produtos para vender aos seus fãs</p>
+        </div>
+
+        <div className="space-y-6">
+          {loading && products.length === 0 ? (
+            <div className="text-center text-gray-400 py-8">Carregando produtos...</div>
+          ) : (
+            products.map((product, idx) => (
+              <div key={idx} className="bg-black/30 p-4 md:p-6 rounded-lg border border-gray-800">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-white">Produto {idx + 1}</h3>
+                  {products.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeProduct(idx)}
+                      className="text-red-400 hover:text-red-300 text-sm transition"
+                    >
+                      Remover
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ArtistInputField
+                    id={`productName-${idx}`}
+                    name={`productName-${idx}`}
+                    type="text"
+                    placeholder="Nome do produto"
+                    value={product.nome}
+                    onChange={(e) => handleProductChange(idx, 'nome', e.target.value)}
+                    required
+                  />
+                  <ArtistInputField
+                    id={`productPrice-${idx}`}
+                    name={`productPrice-${idx}`}
+                    type="number"
+                    step="0.01"
+                    placeholder="Preço (R$)"
+                    value={product.preco || ''}
+                    onChange={(e) => handleProductChange(idx, 'preco', parseFloat(e.target.value) || 0)}
+                    required
+                  />
+                  <ArtistInputField
+                    id={`productStock-${idx}`}
+                    name={`productStock-${idx}`}
+                    type="number"
+                    placeholder="Quantidade em estoque"
+                    value={product.estoque || ''}
+                    onChange={(e) => handleProductChange(idx, 'estoque', parseInt(e.target.value) || 0)}
+                    required
+                  />
+                  <div className="md:col-span-2">
+                    <ArtistTextArea
+                      id={`productDesc-${idx}`}
+                      name={`productDesc-${idx}`}
+                      placeholder="Descrição do produto"
+                      value={product.descricao || ''}
+                      onChange={(e) => handleProductChange(idx, 'descricao', e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <Button type="button" onClick={addProduct} className="max-w-xs">
+            + Adicionar Produto
+          </Button>
+        </div>
+      </div>
+
+      {/* Submit Section */}
+      <div className="bg-neutral-900 rounded-xl shadow-xl p-6 md:p-8 border border-gray-800">
+        <div className="space-y-4">
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Salvando...' : 'Salvar Alterações'}
+          </Button>
+          <div className="text-center">
+            <Link href={user?.id ? `/artista/${user.id}` : '/'} className="text-sm text-gray-400 hover:text-white transition-colors">
+              ← Voltar para o perfil
+            </Link>
+          </div>
         </div>
       </div>
     </form>

@@ -13,26 +13,29 @@ interface User {
   type?: 'artista' | 'fa';
 }
 
-const getInitialUser = (): User | null => {
-  if (typeof window !== "undefined") {
-    const storedUser = localStorage.getItem("currentUser");
-    if (storedUser) {
-      return JSON.parse(storedUser);
-    }
-  }
-  return null;
-};
-
 const Nav: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(getInitialUser);
+  const [user, setUser] = useState<User | null>(null);
+  const [mounted, setMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const router = useRouter();
   const { cartItems } = useCart();
 
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    setMounted(true);
+    const storedUser = localStorage.getItem("currentUser");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Error parsing user from localStorage', e);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {

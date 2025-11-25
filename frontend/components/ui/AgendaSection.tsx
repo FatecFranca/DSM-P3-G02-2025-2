@@ -10,27 +10,27 @@ interface AgendaSectionProps {
 export default function AgendaSection({ artistId }: AgendaSectionProps) {
   const { events: apiEvents, loading, error } = useEvents(artistId ? { artista_id: artistId } : undefined);
 
-  // If API returns events, use them. Otherwise try to read localStorage saved profile data.
-  let events = apiEvents || [];
-
-  if ((!events || events.length === 0) && typeof window !== 'undefined') {
+  const formatDate = (dateString: string) => {
     try {
-      const rawUser = JSON.parse(localStorage.getItem('user') || 'null');
-      if (rawUser && (rawUser.id === artistId)) {
-        events = rawUser.artistProfileData?.events || [];
-      } else {
-        const usersDB = JSON.parse(localStorage.getItem('usersDB') || '[]');
-        const found = usersDB.find((u: any) => u.id === artistId);
-        if (found) events = found.artistProfileData?.events || [];
-      }
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     } catch (e) {
-      // ignore
+      return dateString;
     }
-  }
+  };
 
-  const showItems = (events && events.length > 0) ? events : [
-    { date: "Em breve", local: "—", event: "Sem eventos cadastrados" }
-  ];
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(price);
+  };
 
   return (
     <section id="agenda" className="min-h-screen bg-black py-12">
@@ -43,17 +43,46 @@ export default function AgendaSection({ artistId }: AgendaSectionProps) {
           </div>
         )}
 
-        <div className="space-y-3">
-          {showItems.map((show: any, index: number) => (
-            <div key={index} className="text-white p-4 border-b border-neutral-800">
-              <div className="flex justify-between items-center">
-                <span className="font-montserrat text-left flex-1">{show.date}</span>
-                <span className="font-montserrat text-center flex-1">{show.local || show.location || ''}</span>
-                <span className="font-montserrat text-right flex-1">{show.name || show.event || ''}</span>
+        {error && (
+          <div className="flex justify-center items-center h-24">
+            <p className="text-red-400">Erro ao carregar eventos</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div className="space-y-3">
+            {apiEvents && apiEvents.length > 0 ? (
+              apiEvents.map((evento: any) => (
+                <div key={evento.id} className="text-white p-6 border border-neutral-800 rounded-lg bg-neutral-900 hover:border-[#FF7A29] transition">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-xs text-gray-400 mb-1">Data e Hora</span>
+                      <span className="font-montserrat text-white">{formatDate(evento.data)}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-gray-400 mb-1">Local</span>
+                      <span className="font-montserrat text-white">{evento.local}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-xs text-gray-400 mb-1">Ingresso</span>
+                      <span className="font-montserrat text-white">{formatPrice(evento.preco_ingresso)}</span>
+                    </div>
+                  </div>
+                  {evento.descricao && (
+                    <div className="mt-4">
+                      <span className="text-xs text-gray-400 mb-1 block">Descrição</span>
+                      <p className="font-montserrat text-gray-300 text-sm">{evento.descricao}</p>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center text-gray-400 py-12">
+                <p className="font-montserrat">Nenhum evento cadastrado</p>
               </div>
-            </div>
-          ))}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
